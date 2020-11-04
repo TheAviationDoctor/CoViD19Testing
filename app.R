@@ -4,7 +4,7 @@
 
 # Load libraries
 library(shiny)
-library(readr)
+library(tidyverse)
 
 # Clear the console
 cat("\014")
@@ -34,34 +34,34 @@ ui <- fluidPage(
             # Origin characteristics
             h3("Origin characteristics"),
             selectInput(inputId = "DepartureState", label = "Departure state", choices = states),
-            selectInput(inputId = "DeparturePrevalenceChoice", label = "Departure disease prevalence", choices = list("Automatic (based on medical data for that state)", "Manual (enter your own)")),
+            selectInput(inputId = "DeparturePrevalenceChoice", label = "Disease prevalence at origin", choices = list("Automatic (based on medical data for that state)", "Manual (enter your own)")),
             conditionalPanel(
                 condition = "input.DeparturePrevalenceChoice == 'Manual (enter your own)'",
-                sliderInput(inputId = "DeparturePrevalence", label = "Select a disease prevalence at departure", min=0, max=100, value=4),
+                sliderInput(inputId = "DeparturePrevalence", label = "Select a disease prevalence at origin", min=0, max=1, value=.1),
             ),
             
             # Destination characteristics
             hr(),
             h3("Destination characteristics"),
             selectInput(inputId = "ArrivalState", label = "Arrival state", choices = states),
-            selectInput(inputId = "ArrivalPrevalenceChoice", label = "Arrival disease prevalence", choices = list("Automatic (based on medical data for that state)", "Manual (enter your own)")),
+            selectInput(inputId = "ArrivalPrevalenceChoice", label = "Disease prevalence at destination", choices = list("Automatic (based on medical data for that state)", "Manual (enter your own)")),
             conditionalPanel(
                 condition = "input.ArrivalPrevalenceChoice == 'Manual (enter your own)'",
-                sliderInput(inputId = "ArrivalPrevalence", label = "Select a disease prevalence at arrival", min=0, max=100, value=4),
+                sliderInput(inputId = "ArrivalPrevalence", label = "Select a disease prevalence at destination", min=0, max=1, value=.12),
             ),
             
             # Population characteristics
             hr(),
             h3("Population characteristics"),
-            selectInput(inputId = "PopulationCountChoice", label = "Passenger count", choices = list("Automatic (based on 2019 O&D traffic)", "Manual (enter your own)")),
+            selectInput(inputId = "PopulationCountChoice", label = "Air traveler count", choices = list("Automatic (based on 2019 O&D traffic)", "Manual (enter your own)")),
             conditionalPanel(
                 condition = "input.PopulationCountChoice == 'Manual (enter your own)'",
-                sliderInput(inputId = "PopulationCount", label = "Select the passenger count", min=0, max=4.5*10^9, value=2.2*10^9),
+                sliderInput(inputId = "PopulationCount", label = "Select the air traveler count", min=0, max=4.5*10^9, value=2.2*10^9),
             ),
-            selectInput(inputId = "PopulationTestingChoice", label = "Proportion of passengers being tested", choices = list("Systematic testing (everyone)", "Sample testing (enter a percentage)")),
+            selectInput(inputId = "PopulationTestingChoice", label = "Proportion of air travelers being tested", choices = list("Systematic testing (all air travelers)", "Sample testing (enter a percentage)")),
             conditionalPanel(
                 condition = "input.PopulationTestingChoice == 'Sample testing (enter a percentage)'",
-                sliderInput(inputId = "PopulationTestingRate", label = "Proportion of passengers being tested", min=0, max=100, value=100),
+                sliderInput(inputId = "PopulationTestingRate", label = "Proportion of air travelers being tested", min=0, max=100, value=100),
             ),
 
             # Pre-departure test characteristics
@@ -71,8 +71,8 @@ ui <- fluidPage(
             conditionalPanel(
                 condition = "input.DepartureTestMethod == 'Manual (design your own)'",
                 sliderInput(inputId = "DepartureTestLimitOfDetection", label = "Limit of detection (copies/ml)", min=0, max=10^4, value=1000),
-                sliderInput(inputId = "DepartureTestSensitivity", label = "Clinical sensitivity", min=0, max=100, value=70),
-                sliderInput(inputId = "DepartureTestSpecificity", label = "Clinical specificity", min=0, max=100, value=95)
+                sliderInput(inputId = "DepartureTestSensitivity", label = "Clinical sensitivity", min=0, max=1, value=.7),
+                sliderInput(inputId = "DepartureTestSpecificity", label = "Clinical specificity", min=0, max=1, value=.95)
             ),
             conditionalPanel(
                 condition = "input.DepartureTestMethod != 'None'",
@@ -86,8 +86,8 @@ ui <- fluidPage(
             conditionalPanel(
                 condition = "input.ArrivalTestMethod == 'Manual (design your own)'",
                 sliderInput(inputId = "ArrivalTestLimitOfDetection", label = "Limit of detection (copies/ml)", min=0, max=10^4, value=1000),
-                sliderInput(inputId = "ArrivalTestSensitivity", label = "Clinical sensitivity", min=0, max=100, value=70),
-                sliderInput(inputId = "ArrivalTestSpecificity", label = "Clinical specificity", min=0, max=100, value=95)
+                sliderInput(inputId = "ArrivalTestSensitivity", label = "Clinical sensitivity", min=0, max=1, value=.7),
+                sliderInput(inputId = "ArrivalTestSpecificity", label = "Clinical specificity", min=0, max=1, value=.95)
             ),
             conditionalPanel(
                 condition = "input.ArrivalTestMethod != 'None'",
@@ -97,36 +97,36 @@ ui <- fluidPage(
         ),
         # Main panel for displaying outputs
         mainPanel(
-            h3("Pre-departure outcomes"),
-            p("Lorem ipsum dolor sit amet"),
+            
+            # Active model parameters
+            h3("Summary of the active model parameters"),
+            tableOutput("ModelParameters"),
             hr(),
-            h3("Departure outcomes"),
+            
+            # Pre-departure, pre-test outcomes
+            h3("Pre-departure, pre-test outcomes"),
+            p("This table shows the pre-test probability that any given air traveler reporting for pre-departure is infected, based on the disease prevalence at origin and the volume of travelers being considered."),
+            tableOutput("PreDeparturePreTestPercentages"),
+            hr(),
+            
+            # Pre-departure, post-test outcomes
+            h3("Pre-departure, post-test outcomes"),
+            p("This table shows the probabilities of test outcomes at departures, by percentage (left) and air traveler count (right). It shows (clockwise, from the top left of each table) the true positives, false positives, true negatives, and false negatives."),
             fluidRow(
-                column(width = 8, strong("Probability that a traveler...")),
-                column(width = 1, offset = 0, strong("%"))
-            ),            fluidRow(
-                column(width = 8, "Tests positive given they are infected (true positive):"),
-                column(width = 1, offset = 0, textOutput("DepartureProbabilityPositiveGivenInfected"))
-            ),
-            fluidRow(
-                column(width = 8, "Tests positive given they are not infected (false positive):"),
-                column(width = 1, offset = 0, textOutput("DepartureProbabilityPositiveGivenNotInfected"))
-            ),
-            fluidRow(
-                column(width = 8, "Tests negative given they are infected (false negative):"),
-                column(width = 1, offset = 0, textOutput("DepartureProbabilityNegativeGivenInfected"))
-            ),
-            fluidRow(
-                column(width = 8, "Tests negative given they are not infected (true negative):"),
-                column(width = 1, offset = 0, textOutput("DepartureProbabilityNegativeGivenNotInfected"))
+                column(5, tableOutput("PreDeparturePostTestPercentages")),
+                column(5, tableOutput("PreDeparturePostTestCount"))
             ),
             hr(),
-            h3("On-board outcomes"),
-            p("Lorem ipsum dolor sit amet"),
-            # We could use load factors here
+
+            # Post-arrival, pre-test outcomes
+            h3("Post-arrival, pre-test outcomes"),
+            p("This will show the risk on arrival at destination."),
             hr(),
-            h3("Arrival outcomes"),
-            p("Lorem ipsum dolor sit amet"),
+            
+            # Post-arrival, post-test outcomes
+            h3("Post-arrival, post-test outcomes"),
+            p("This will show the risk on arrival at destination."),
+            hr(),
         )
     )
 )
@@ -136,15 +136,39 @@ ui <- fluidPage(
 ###############################################################################
 
 server <- function(input, output) {
-    
-    # Calculate pre-departure test outcomes
-    output$DepartureProbabilityPositiveGivenInfected <- renderText({ input$DepartureTestSensitivity })
-    output$DepartureProbabilityPositiveGivenNotInfected <- renderText({ 100 - input$DepartureTestSpecificity })
-    output$DepartureProbabilityNegativeGivenInfected <- renderText({ 100 - input$DepartureTestSensitivity })
-    output$DepartureProbabilityNegativeGivenNotInfected <- renderText({ input$DepartureTestSpecificity })
-    
-    DepartureProbabilitiesLabels <- c("Probability that a traveler tests positive given they are infected (true positive):","Probability that a traveler tests positive given they are not infected (false positive):","Probability that a traveler tests negative given they are infected (false negative):","Probability that a traveler tests negative given they are not infected (true negative):")
 
+    output$ModelParameters <- renderTable(
+        data.frame(
+            "Parameter" = c("Disease prevalence at origin", "Disease prevalence at destination", "Number of travelers", "Proportion of travelers being tested"),
+            "Value" = c(input$DeparturePrevalence, input$ArrivalPrevalence, input$PopulationCount, input$PopulationTestingRate)
+        ), rownames = FALSE, colnames = TRUE, digits = 2
+    )
+    
+    
+    output$PreDeparturePreTestPercentages <- renderTable(
+        data.frame(
+            "Disease" = c("Positive"),
+            "Infected" = c(input$DeparturePrevalence),
+            "Uninfected" = c(1 - input$DeparturePrevalence)
+        ), rownames = FALSE, colnames = TRUE, digits = 2
+    )
+    
+    output$PreDeparturePostTestPercentages <- renderTable(
+        data.frame(
+            "Test" = c("Positive", "Negative"),
+            "Infected" = c(input$DepartureTestSensitivity, 100 - input$DepartureTestSensitivity),
+            "Uninfected" = c(100 - input$DepartureTestSpecificity, input$DepartureTestSensitivity)
+        ), rownames = FALSE, colnames = TRUE, digits = 2
+    )
+    
+    output$PreDeparturePostTestCount <- renderTable(
+        data.frame(
+            "Test" = c("Positive", "Negative"),
+            "Infected" = c(input$DepartureTestSensitivity * input$PopulationCount, (100 - input$DepartureTestSensitivity) * input$PopulationCount),
+            "Uninfected" = c((100 - input$DepartureTestSpecificity) * input$PopulationCount, input$DepartureTestSensitivity * input$PopulationCount)
+        ), rownames = FALSE, colnames = TRUE, digits = 0
+    )
+    
 }
 
 ###############################################################################
