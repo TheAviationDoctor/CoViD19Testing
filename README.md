@@ -1,7 +1,6 @@
 # Air Travel COVID-19 testing simulator
-A shiny app to test scenarios of COVID-19 passenger screening in an air travel context.
 
-This R app is meant to test different scenarios of passenger screening for COVID-19 at departure and/or arrival. It models the following variables:
+This R Shiny app is meant to test different scenarios of air traveler screening for COVID-19 at departure and/or arrival. It models the following variables:
 
 ### Disease characteristics
 - Disease prevalence in the departure state (derived from published medical data, or entered manually by the user)
