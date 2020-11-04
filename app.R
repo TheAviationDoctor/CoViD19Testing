@@ -67,7 +67,7 @@ ui <- fluidPage(
             # Pre-departure test characteristics
             hr(),
             h3("Pre-departure test characteristics"),
-            selectInput(inputId = "DepartureTestMethod", label = "Select a testing method", choices = list("None", "Typical RT-PCR", "Typical RT-LAMP", "Typical RT-RPA", "Typical CRISPR-CaS", "Typical RAT", "Manual (enter your own)")),
+            selectInput(inputId = "DepartureTestMethod", label = "Select a testing method", choices = list("None", "Typical RT-PCR", "Typical RT-LAMP", "Typical RT-RPA", "Typical CRISPR-CaS", "Typical RAT", "Manual (design your own)")),
             conditionalPanel(
                 condition = "input.DepartureTestMethod == 'Manual (design your own)'",
                 sliderInput(inputId = "DepartureTestLimitOfDetection", label = "Limit of detection (copies/ml)", min=0, max=10^4, value=1000),
@@ -82,7 +82,7 @@ ui <- fluidPage(
             # Post-arrival test characteristics
             hr(),
             h3("Post-arrival test characteristics"),
-            selectInput(inputId = "ArrivalTestMethod", label = "Select a testing method", choices = list("None", "Typical RT-PCR", "Typical RT-LAMP", "Typical RT-RPA", "Typical CRISPR-CaS", "Typical RAT", "Manual (enter your own)")),
+            selectInput(inputId = "ArrivalTestMethod", label = "Select a testing method", choices = list("None", "Typical RT-PCR", "Typical RT-LAMP", "Typical RT-RPA", "Typical CRISPR-CaS", "Typical RAT", "Manual (design your own)")),
             conditionalPanel(
                 condition = "input.ArrivalTestMethod == 'Manual (design your own)'",
                 sliderInput(inputId = "ArrivalTestLimitOfDetection", label = "Limit of detection (copies/ml)", min=0, max=10^4, value=1000),
@@ -97,11 +97,33 @@ ui <- fluidPage(
         ),
         # Main panel for displaying outputs
         mainPanel(
-            h3("Simulation outputs"),
+            h3("Pre-departure outcomes"),
+            p("Lorem ipsum dolor sit amet"),
+            hr(),
+            h3("Departure outcomes"),
             fluidRow(
-                column(width = 6, "Probability that a traveler tests positive given they are infected:"),
-                column(width = 1, offset = 2, textOutput("ProbabilityPositiveGivenInfected"))
+                column(width = 8, "Probability that a traveler tests positive given they are infected (true positive):"),
+                column(width = 1, offset = 2, textOutput("DepartureProbabilityPositiveGivenInfected"))
             ),
+            fluidRow(
+                column(width = 8, "Probability that a traveler tests positive given they are not infected (false positive):"),
+                column(width = 1, offset = 2, textOutput("DepartureProbabilityPositiveGivenNotInfected"))
+            ),
+            fluidRow(
+                column(width = 8, "Probability that a traveler tests negative given they are infected (false negative):"),
+                column(width = 1, offset = 2, textOutput("DepartureProbabilityNegativeGivenInfected"))
+            ),
+            fluidRow(
+                column(width = 8, "Probability that a traveler tests negative given they are not infected (true negative):"),
+                column(width = 1, offset = 2, textOutput("DepartureProbabilityNegativeGivenNotInfected"))
+            ),
+            hr(),
+            h3("On-board outcomes"),
+            p("Lorem ipsum dolor sit amet"),
+            # We could use load factors here
+            hr(),
+            h3("Arrival outcomes"),
+            p("Lorem ipsum dolor sit amet"),
         )
     )
 )
@@ -112,11 +134,14 @@ ui <- fluidPage(
 
 server <- function(input, output) {
     
-    output$ProbabilityPositiveGivenInfected <- renderText({ input$DepartureTestSensitivity })
-    output$ProbabilityPositiveGivenNotInfected <- renderText({ 1- input$DepartureTestSpecificity })
-    output$ProbabilityNegativeGivenInfected <- renderText({ 1 - input$DepartureTestSensitivity })
-    output$ProbabilityNegativeGivenNotInfected <- renderText({ input$DepartureTestSpecitificity })
+    # Calculate pre-departure test outcomes
+    output$DepartureProbabilityPositiveGivenInfected <- renderText({ input$DepartureTestSensitivity })
+    output$DepartureProbabilityPositiveGivenNotInfected <- renderText({ 100 - input$DepartureTestSpecificity })
+    output$DepartureProbabilityNegativeGivenInfected <- renderText({ 100 - input$DepartureTestSensitivity })
+    output$DepartureProbabilityNegativeGivenNotInfected <- renderText({ input$DepartureTestSpecificity })
     
+    DepartureProbabilitiesLabels <- c("Probability that a traveler tests positive given they are infected (true positive):","Probability that a traveler tests positive given they are not infected (false positive):","Probability that a traveler tests negative given they are infected (false negative):","Probability that a traveler tests negative given they are not infected (true negative):")
+
 }
 
 ###############################################################################
