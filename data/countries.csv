@@ -1,216 +1,217 @@
-Afghanistan
-Albania
-Algeria
-Angola
-Anguilla
-Antigua and Barbuda
-Argentina
-Armenia
-Aruba
-Australia
-Austria
-Azerbaijan
-Bahamas
-Bahrain
-Bangladesh
-Barbados
-Belarus
-Belgium
-Belize
-Benin
-Bermuda
-Bhutan
-Bolivia
-Bonaire Saint Eustatius & Saba
-Bosnia and Herzegovina
-Botswana
-Brazil
-British Virgin Islands
-Brunei Darussalam
-Bulgaria
-Burkina Faso
-Burundi
-Cambodia
-Cameroon
-Canada
-Cape Verde
-Cayman Islands
-Central African Republic
-Chad
-Chile
-China
-Chinese Taipei
-Cocos (Keeling) Islands
-Colombia
-Comoros
-Congo
-Cook Islands
-Costa Rica
-Croatia
-Cuba
-Curacao
-Cyprus
-Czech Republic
-Democratic Republic of the Congo
-Denmark
-Djibouti
-Dominica
-Dominican Republic
-East Timor
-Ecuador
-Egypt
-El Salvador
-Equatorial Guinea
-Eritrea
-Estonia
-Ethiopia
-Falkland Islands
-Fiji
-Finland
-France
-French Guiana
-French Polynesia
-Gabon
-Gambia
-Georgia
-Germany
-Ghana
-Gibraltar
-Greece
-Greenland
-Grenada and South Grenadines
-Guadeloupe
-Guatemala
-Guinea
-Guinea Bissau
-Guyana
-Haiti
-Honduras
-Hong Kong (SAR)
-Hungary
-Iceland
-India
-Indonesia
-Iran
-Iraq
-Ireland
-Israel
-Italy
-Ivory Coast (Cote d'Ivoire)
-Jamaica
-Japan
-Jordan
-Kazakhstan
-Kenya
-Kiribati
-Kuwait
-Kyrgyzstan
-Laos
-Latvia
-Lebanon
-Libya
-Lithuania
-Luxembourg
-Macau (SAR)
-Macedonia
-Madagascar
-Malawi
-Malaysia
-Maldives
-Mali
-Malta
-Marshall Islands
-Martinique
-Mauritania
-Mauritius
-Mayotte
-Mexico
-Micronesia
-Moldova
-Monaco
-Mongolia
-Montenegro
-Morocco
-Mozambique
-Myanmar
-Namibia
-Nauru
-Nepal
-Netherlands
-New Caledonia
-New Zealand
-Nicaragua
-Niger
-Nigeria
-Norfolk Island
-North Korea
-Norway
-Oman
-Pakistan
-Palau
-Panama
-Papua New Guinea
-Paraguay
-Peru
-Philippines
-Poland
-Portugal
-Qatar
-Reunion
-Romania
-Russian Federation
-Rwanda
-Saint Helena
-Saint Kitts and Nevis
-Saint Lucia
-Saint Pierre and Miquelon
-Saint Vincent and Grenadines
-Sao Tome and Principe
-Saudi Arabia
-Senegal
-Serbia
-Seychelles
-Sierra Leone
-Singapore
-Sint Maarten
-Slovakia
-Slovenia
-Solomon Islands
-Somalia
-South Africa
-South Korea
-South Sudan
-Spain
-Sri Lanka
-Sudan
-Suriname
-Sweden
-Switzerland
-Syria
-Tajikistan
-Tanzania
-Thailand
-Togo
-Tonga
-Trinidad and Tobago
-Tunisia
-Turkey
-Turkmenistan
-Turks and Caicos Islands
-Tuvalu
-Uganda
-Ukraine
-United Arab Emirates
-United Kingdom
-United States
-Uruguay
-Uzbekistan
-Vanuatu
-Venezuela
-Vietnam
-Wallis and Futuna Islands
-Western Sahara
-Western Samoa
-Yemen
-Zambia
-Zimbabwe
+Code,Country
+AF,Afghanistan
+AL,Albania
+DZ,Algeria
+AO,Angola
+AI,Anguilla
+AG,Antigua and Barbuda
+AR,Argentina
+AM,Armenia
+AW,Aruba
+AU,Australia
+AT,Austria
+AZ,Azerbaijan
+BS,Bahamas
+BH,Bahrain
+BD,Bangladesh
+BB,Barbados
+BY,Belarus
+BE,Belgium
+BZ,Belize
+BJ,Benin
+BM,Bermuda
+BT,Bhutan
+BO,Bolivia
+BQ,Bonaire Saint Eustatius & Saba
+BA,Bosnia and Herzegovina
+BW,Botswana
+BR,Brazil
+VG,British Virgin Islands
+BN,Brunei Darussalam
+BG,Bulgaria
+BF,Burkina Faso
+BI,Burundi
+KH,Cambodia
+CM,Cameroon
+CA,Canada
+CV,Cape Verde
+KY,Cayman Islands
+CF,Central African Republic
+TD,Chad
+CL,Chile
+CN,China
+TW,Chinese Taipei
+CC,Cocos (Keeling) Islands
+CO,Colombia
+KM,Comoros
+CG,Congo
+CK,Cook Islands
+CR,Costa Rica
+HR,Croatia
+CU,Cuba
+CW,Curacao
+CY,Cyprus
+CZ,Czech Republic
+CD,Democratic Republic of the Congo
+DK,Denmark
+DJ,Djibouti
+DM,Dominica
+DO,Dominican Republic
+TL,East Timor
+EC,Ecuador
+EG,Egypt
+SV,El Salvador
+GQ,Equatorial Guinea
+ER,Eritrea
+EE,Estonia
+ET,Ethiopia
+FK,Falkland Islands
+FJ,Fiji
+FI,Finland
+FR,France
+GF,French Guiana
+PF,French Polynesia
+GA,Gabon
+GM,Gambia
+GE,Georgia
+DE,Germany
+GH,Ghana
+GI,Gibraltar
+GR,Greece
+GL,Greenland
+GD,Grenada and South Grenadines
+GP,Guadeloupe
+GT,Guatemala
+GN,Guinea
+GW,Guinea Bissau
+GY,Guyana
+HT,Haiti
+HN,Honduras
+HK,Hong Kong (SAR)
+HU,Hungary
+IS,Iceland
+IN,India
+ID,Indonesia
+IR,Iran
+IQ,Iraq
+IE,Ireland
+IL,Israel
+IT,Italy
+CI,Ivory Coast (Cote d'Ivoire)
+JM,Jamaica
+JP,Japan
+JO,Jordan
+KZ,Kazakhstan
+KE,Kenya
+KI,Kiribati
+KW,Kuwait
+KG,Kyrgyzstan
+LA,Laos
+LV,Latvia
+LB,Lebanon
+LY,Libya
+LT,Lithuania
+LU,Luxembourg
+MO,Macau (SAR)
+MK,Macedonia
+MG,Madagascar
+MW,Malawi
+MY,Malaysia
+MV,Maldives
+ML,Mali
+MT,Malta
+MH,Marshall Islands
+MQ,Martinique
+MR,Mauritania
+MU,Mauritius
+YT,Mayotte
+MX,Mexico
+FM,Micronesia
+MD,Moldova
+MC,Monaco
+MN,Mongolia
+ME,Montenegro
+MA,Morocco
+MZ,Mozambique
+MM,Myanmar
+NA,Namibia
+NR,Nauru
+NP,Nepal
+NL,Netherlands
+NC,New Caledonia
+NZ,New Zealand
+NI,Nicaragua
+NE,Niger
+NG,Nigeria
+NF,Norfolk Island
+KP,North Korea
+NO,Norway
+OM,Oman
+PK,Pakistan
+PW,Palau
+PA,Panama
+PG,Papua New Guinea
+PY,Paraguay
+PE,Peru
+PH,Philippines
+PL,Poland
+PT,Portugal
+QA,Qatar
+RE,Reunion
+RO,Romania
+RU,Russian Federation
+RW,Rwanda
+SH,Saint Helena
+KN,Saint Kitts and Nevis
+LC,Saint Lucia
+PM,Saint Pierre and Miquelon
+VC,Saint Vincent and Grenadines
+ST,Sao Tome and Principe
+SA,Saudi Arabia
+SN,Senegal
+RS,Serbia
+SC,Seychelles
+SL,Sierra Leone
+SG,Singapore
+SX,Sint Maarten
+SK,Slovakia
+SI,Slovenia
+SB,Solomon Islands
+SO,Somalia
+ZA,South Africa
+KR,South Korea
+SS,South Sudan
+ES,Spain
+LK,Sri Lanka
+SD,Sudan
+SR,Suriname
+SE,Sweden
+CH,Switzerland
+SY,Syria
+TJ,Tajikistan
+TZ,Tanzania
+TH,Thailand
+TG,Togo
+TO,Tonga
+TT,Trinidad and Tobago
+TN,Tunisia
+TR,Turkey
+TM,Turkmenistan
+TC,Turks and Caicos Islands
+TV,Tuvalu
+UG,Uganda
+UA,Ukraine
+AE,United Arab Emirates
+GB,United Kingdom
+US,United States
+UY,Uruguay
+UZ,Uzbekistan
+VU,Vanuatu
+VE,Venezuela
+VN,Vietnam
+WF,Wallis and Futuna Islands
+EH,Western Sahara
+WS,Western Samoa
+YE,Yemen
+ZM,Zambia
+ZW,Zimbabwe
