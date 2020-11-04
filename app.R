@@ -102,20 +102,23 @@ ui <- fluidPage(
             hr(),
             h3("Departure outcomes"),
             fluidRow(
-                column(width = 8, "Probability that a traveler tests positive given they are infected (true positive):"),
-                column(width = 1, offset = 2, textOutput("DepartureProbabilityPositiveGivenInfected"))
+                column(width = 8, strong("Probability that a traveler...")),
+                column(width = 1, offset = 0, strong("%"))
+            ),            fluidRow(
+                column(width = 8, "Tests positive given they are infected (true positive):"),
+                column(width = 1, offset = 0, textOutput("DepartureProbabilityPositiveGivenInfected"))
             ),
             fluidRow(
-                column(width = 8, "Probability that a traveler tests positive given they are not infected (false positive):"),
-                column(width = 1, offset = 2, textOutput("DepartureProbabilityPositiveGivenNotInfected"))
+                column(width = 8, "Tests positive given they are not infected (false positive):"),
+                column(width = 1, offset = 0, textOutput("DepartureProbabilityPositiveGivenNotInfected"))
             ),
             fluidRow(
-                column(width = 8, "Probability that a traveler tests negative given they are infected (false negative):"),
-                column(width = 1, offset = 2, textOutput("DepartureProbabilityNegativeGivenInfected"))
+                column(width = 8, "Tests negative given they are infected (false negative):"),
+                column(width = 1, offset = 0, textOutput("DepartureProbabilityNegativeGivenInfected"))
             ),
             fluidRow(
-                column(width = 8, "Probability that a traveler tests negative given they are not infected (true negative):"),
-                column(width = 1, offset = 2, textOutput("DepartureProbabilityNegativeGivenNotInfected"))
+                column(width = 8, "Tests negative given they are not infected (true negative):"),
+                column(width = 1, offset = 0, textOutput("DepartureProbabilityNegativeGivenNotInfected"))
             ),
             hr(),
             h3("On-board outcomes"),
