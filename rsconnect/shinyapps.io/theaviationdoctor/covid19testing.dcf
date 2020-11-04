@@ -1,0 +1,10 @@
+name: covid19testing
+title:
+username:
+account: theaviationdoctor
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3130675
+bundleId: 3800860
+url: https://theaviationdoctor.shinyapps.io/covid19testing/
+when: 1604067752.71635
