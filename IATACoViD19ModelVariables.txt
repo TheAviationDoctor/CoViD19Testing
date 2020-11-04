@@ -1,0 +1,12 @@
+Model variables
+---------------
+TestDesignCharacteristics
+	AnalyticalSensitivity
+	Specificity
+	Sensitivity
+CityOfOrigin
+	TrafficPairs
+	EstimatedPrevalence
+	RiskRating
+TestOperations
+	TimeFromDeparture	
