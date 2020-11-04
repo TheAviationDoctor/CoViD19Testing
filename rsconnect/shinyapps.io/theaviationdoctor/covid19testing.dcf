@@ -1,10 +1,13 @@
-name: covid19testing
-title:
+name: CoViD19Testing
+title: CoViD19Testing
 username:
 account: theaviationdoctor
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3130675
-bundleId: 3800860
+bundleId: 3818662
 url: https://theaviationdoctor.shinyapps.io/covid19testing/
-when: 1604067752.71635
+when: 1604477372.7258
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: app_old.R|IATACoViD19ModelVariables.txt
