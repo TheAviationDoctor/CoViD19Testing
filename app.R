@@ -3,6 +3,7 @@
 ###############################################################################
 
 # Load libraries
+library(DT)
 library(shiny)
 library(tidyverse)
 
@@ -25,16 +26,22 @@ ui <- fluidPage(
     titlePanel("Air Travel COVID-19 testing simulator"),
     hr(),
     
-    # Layout with input and output definitions
     sidebarLayout(
+
+        ###############################################################################
+        # SIDEBAR PANEL FOR INPUTS                                                    #
+        ###############################################################################
         
-        # Sidebar panel for selecting inputs
         sidebarPanel(
 
+            # Title
+            h2("Model inputs"),
+            hr(),
+            
             # Origin characteristics
             h3("Origin characteristics"),
             selectInput(inputId = "DepartureState", label = "Departure state", choices = states),
-            selectInput(inputId = "DeparturePrevalenceChoice", label = "Disease prevalence at origin", choices = list("Automatic (based on medical data for that state)", "Manual (enter your own)")),
+            selectInput(inputId = "DeparturePrevalenceChoice", label = "Disease prevalence at origin", choices = list("Automatic (based on data for that state)", "Manual (enter your own)")),
             conditionalPanel(
                 condition = "input.DeparturePrevalenceChoice == 'Manual (enter your own)'",
                 sliderInput(inputId = "DeparturePrevalence", label = "Select a disease prevalence at origin", min=0, max=1, value=.1),
@@ -44,7 +51,7 @@ ui <- fluidPage(
             hr(),
             h3("Destination characteristics"),
             selectInput(inputId = "ArrivalState", label = "Arrival state", choices = states),
-            selectInput(inputId = "ArrivalPrevalenceChoice", label = "Disease prevalence at destination", choices = list("Automatic (based on medical data for that state)", "Manual (enter your own)")),
+            selectInput(inputId = "ArrivalPrevalenceChoice", label = "Disease prevalence at destination", choices = list("Automatic (based on medical for that state)", "Manual (enter your own)")),
             conditionalPanel(
                 condition = "input.ArrivalPrevalenceChoice == 'Manual (enter your own)'",
                 sliderInput(inputId = "ArrivalPrevalence", label = "Select a disease prevalence at destination", min=0, max=1, value=.12),
@@ -95,12 +102,27 @@ ui <- fluidPage(
             ),
             
         ),
-        # Main panel for displaying outputs
+        
+        ###############################################################################
+        # MAIN PANEL FOR OUTPUTS                                                      #
+        ###############################################################################
+        
         mainPanel(
             
+            # Title
+            h2("Model outputs"),
+            hr(),
+            
             # Active model parameters
-            h3("Summary of the active model parameters"),
-            tableOutput("ModelParameters"),
+            h3("Disease prevalence at origin and destination"),
+
+            fluidRow(
+                column(5,
+                    dataTableOutput("DiseasePrevalenceTable"),
+                ),
+                column(5,
+                    plotOutput("DiseasePrevalenceChart"),                )
+            ),
             hr(),
             
             # Pre-departure, pre-test outcomes
@@ -137,13 +159,39 @@ ui <- fluidPage(
 
 server <- function(input, output) {
 
-    output$ModelParameters <- renderTable(
-        data.frame(
-            "Parameter" = c("Disease prevalence at origin", "Disease prevalence at destination", "Number of travelers", "Proportion of travelers being tested"),
-            "Value" = c(input$DeparturePrevalence, input$ArrivalPrevalence, input$PopulationCount, input$PopulationTestingRate)
-        ), rownames = FALSE, colnames = TRUE, digits = 2
-    )
+    ###############################################################################
+    # DISEASE PREVALENCE                                                          #
+    ###############################################################################
     
+    # Build a data frame to store the disease prevalence at origin and destination
+    DiseasePrevalenceTable <- reactive({
+        DiseasePrevalenceLabels = c("At origin", "At destination")
+        DiseasePrevalenceValues = c(input$DeparturePrevalence, input$ArrivalPrevalence)
+        data.frame(Prevalence = DiseasePrevalenceLabels, Value = DiseasePrevalenceValues, stringsAsFactors = FALSE)
+    })
+    
+    # Render a table to display the disease prevalence at origin and destination
+    output$DiseasePrevalenceTable <- renderDataTable(
+        DiseasePrevalenceTable(),
+        options = list(dom = 't')
+    )
+
+    # Render a bar plot to display the disease prevalence at origin and destination
+    output$DiseasePrevalenceChart <- renderPlot({
+        ggplot(data = DiseasePrevalenceTable(), aes(x = Prevalence, y = Value)) +
+        geom_bar(stat="identity") +
+        labs(title = "Assumed disease prevalence at origin and destination", y = "Number") +
+        theme_classic()
+    })
+
+    # output$DiseasePrevalenceChart <-renderPlot({
+    #     ggplot(data = DiseasePrevalenceTable(), aes_string(x = c("Origin", "Destination"), y = c(.1,.2)))  +
+    #         stat_summary(fun.y = sum, geom = "bar",colour="#56B4E9",fill="#56B4E9") +
+    #         geom_bar(stat="identity") +
+    #         labs(title = "Prevalence", y = "Number") +
+    #         theme_classic() +
+    #         theme(plot.title = element_text(hjust = 0.5))
+    # })
     
     output$PreDeparturePreTestPercentages <- renderTable(
         data.frame(
