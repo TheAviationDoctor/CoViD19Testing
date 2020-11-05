@@ -119,19 +119,16 @@ ui <- fluidPage(
             
             h3("1. Pre-departure, pre-test outcomes"),
             fluidRow(
-                column(6,
-                    em("Table 1.1. Assumed disease prevalence among the general population."),
+                column(12,
+                    em("Assumed disease prevalence among the air travelers flying from the origin to the destination (in percentage to the left, in headcount to the right)."),
                 ),
-                column(6,
-                    em("Table 1.2. Assumed disease prevalence among air travelers flying from origin to destination."),
-                )
             ),
             fluidRow(
                 column(6,
-                    dataTableOutput("DiseasePrevalenceTable"),
+                    dataTableOutput("PreDepartureDiseasePrevalencePercentageTable"),
                 ),
                 column(6,
-                    dataTableOutput("DiseasePrevalenceAmongAirTravelersTable"),
+                       dataTableOutput("PreDepartureDiseasePrevalenceHeadcountTable"),
                 )
             ),
             hr(),
@@ -143,10 +140,10 @@ ui <- fluidPage(
             h3("2. Pre-departure, post-test outcomes"),
             fluidRow(
                 column(6,
-                       em("Table 2.1. Probability of a positive (or negative) pre-departure test, given that the air traveler is infected (or uninfected)."),
+                       em("2.1. Probability of a positive (or negative) pre-departure test, given that the air traveler is infected (or uninfected)."),
                 ),
                 column(6,
-                       em("Table 2.2. Count of positive (or negative) pre-departure tests."),
+                       em("2.2. Count of positive (or negative) pre-departure tests."),
                 )
             ),
             fluidRow(
@@ -164,7 +161,21 @@ ui <- fluidPage(
             ###################################################################
 
             h3("3. Post-arrival, pre-test outcomes"),
-            p("This will show the risk on arrival at destination."),
+            fluidRow(
+                column(6,
+                       em("3.1. Disease prevalence among air travelers upon arrival (percentage)."),
+                ),
+                column(6,
+                       em("3.2. Disease prevalence among air travelers upon arrival (headcount)"),
+                )
+            ),
+            fluidRow(
+                column(6,
+                       dataTableOutput("PostArrivalDiseasePrevalencePercentageTable"),
+                ),
+                column(6,
+                )
+            ),
             hr(),
             
             ###################################################################
@@ -193,31 +204,31 @@ server <- function(input, output) {
     ###########################################################################
     # 1. PRE-DEPARTURE PRE-TEST OUTCOMES                                      #
     ###########################################################################
-    
+
     # 1.1a Build a data frame to store the disease prevalence at origin and destination
-    DiseasePrevalenceTable <- reactive({
-        DiseasePrevalenceLabels = c("At origin", "At destination")
-        DiseasePrevalenceValues = c(input$DeparturePrevalence, input$ArrivalPrevalence)
-        data.frame(Prevalence = DiseasePrevalenceLabels, Value = DiseasePrevalenceValues)
+    PreDepartureDiseasePrevalencePercentageTable <- reactive({
+        PreDepartureDiseasePrevalencePercentageLabels = "Percentage"
+        PreDepartureDiseasePrevalencePercentageInfected = input$DeparturePrevalence
+        PreDepartureDiseasePrevalencePercentageUninfected = 1 - input$DeparturePrevalence
+        datatable(data.frame(Prevalence = PreDepartureDiseasePrevalencePercentageLabels, Infected = PreDepartureDiseasePrevalencePercentageInfected, Uninfected = PreDepartureDiseasePrevalencePercentageUninfected), options = list(dom = 't')) %>% formatPercentage(columns = c("Infected","Uninfected"), digits = 2)
     })
     
     # 1.1b Render a table to display the disease prevalence at origin and destination
-    output$DiseasePrevalenceTable <- renderDataTable(
-        DiseasePrevalenceTable(),
-        options = list(dom = 't')
+    output$PreDepartureDiseasePrevalencePercentageTable <- renderDataTable(
+        PreDepartureDiseasePrevalencePercentageTable()
     )
-
-    # 1.2a Build a data frame to store the disease prevalence among air travelers
-    DiseasePrevalenceAmongAirTravelersTable <- reactive({
-        DiseasePrevalenceAmongAirTravelersLabels = c("By percentage", "By count p.a.")
-        DiseasePrevalenceAmongAirTravelersValues = c(input$DeparturePrevalence, input$ArrivalPrevalence * input$PopulationCount)
-        data.frame(Infected = DiseasePrevalenceAmongAirTravelersLabels, Value = DiseasePrevalenceAmongAirTravelersValues)
+    
+    # 1.2a Build a data frame to store the disease prevalence at origin and destination
+    PreDepartureDiseasePrevalenceHeadcountTable <- reactive({
+        PreDepartureDiseasePrevalenceHeadcountLabels = "Headcount"
+        PreDepartureDiseasePrevalenceHeadcountInfected = input$ArrivalPrevalence * input$PopulationCount
+        PreDepartureDiseasePrevalenceHeadcountUninfected = (1 - input$ArrivalPrevalence) * input$PopulationCount
+        datatable(data.frame(Prevalence = PreDepartureDiseasePrevalenceHeadcountLabels, Infected = PreDepartureDiseasePrevalenceHeadcountInfected, Uninfected = PreDepartureDiseasePrevalenceHeadcountUninfected), options = list(dom = 't')) %>% formatCurrency(columns = c("Infected","Uninfected"), currency = "", digits = 0)
     })
     
-    # 1.2b Render a table to store the disease prevalence among air travelers
-    output$DiseasePrevalenceAmongAirTravelersTable <- renderDataTable(
-        DiseasePrevalenceAmongAirTravelersTable(),
-        options = list(dom = 't')
+    # 1.2b Render a table to display the disease prevalence at origin and destination
+    output$PreDepartureDiseasePrevalenceHeadcountTable <- renderDataTable(
+        PreDepartureDiseasePrevalenceHeadcountTable()
     )
     
     ###########################################################################
@@ -227,7 +238,7 @@ server <- function(input, output) {
     # 2.1a Build a data frame to store the pre-departure test probabilities
     PreDepartureTestOutcomesPercentage <- reactive({
         PreDepartureTestOutcomesPercentageTestLabels = c("Positive", "Negative")
-        PreDepartureTestOutcomesPercentageDiseaseLabels = c("Infected", "Infected", "Uninfected", "Uninfected")
+        PreDepartureTestOutcomesPercentageDiseaseLabels = c("Infected", "Uninfected")
         PreDepartureTestOutcomesPercentageDiseaseInfectedValues = c(input$DepartureTestSensitivity, 1 - input$DepartureTestSensitivity)
         PreDepartureTestOutcomesPercentageDiseaseUninfectedValues = c(1 - input$DepartureTestSpecificity, input$DepartureTestSpecificity)
         data.frame(Test = PreDepartureTestOutcomesPercentageTestLabels, Infected = PreDepartureTestOutcomesPercentageDiseaseInfectedValues,  Uninfected = PreDepartureTestOutcomesPercentageDiseaseUninfectedValues)
@@ -242,7 +253,7 @@ server <- function(input, output) {
     # 2.2a Build a data frame to store the pre-departure test count
     PreDepartureTestOutcomesCount <- reactive({
         PreDepartureTestOutcomesCountTestLabels = c("Positive", "Negative")
-        PreDepartureTestOutcomesCountDiseaseLabels = c("Infected", "Infected", "Uninfected", "Uninfected")
+        PreDepartureTestOutcomesCountDiseaseLabels = c("Infected", "Uninfected")
         PreDepartureTestOutcomesCountDiseaseInfectedValues = c(input$DepartureTestSensitivity * input$PopulationCount, (1 - input$DepartureTestSensitivity) * input$PopulationCount)
         PreDepartureTestOutcomesCountDiseaseUninfectedValues = c((1 - input$DepartureTestSpecificity) * input$PopulationCount, input$DepartureTestSpecificity * input$PopulationCount)
         data.frame(Test = PreDepartureTestOutcomesCountTestLabels, Infected = PreDepartureTestOutcomesCountDiseaseInfectedValues,  Uninfected = PreDepartureTestOutcomesCountDiseaseUninfectedValues)
@@ -253,31 +264,23 @@ server <- function(input, output) {
         PreDepartureTestOutcomesCount(),
         options = list(dom = 't')
     )
+
+    ###########################################################################
+    # 3. POST-ARRIVAL PRE-TEST OUTCOMES                                       #
+    ###########################################################################
     
-    # output$PreDeparturePreTestPercentages <- renderTable(
-    #     data.frame(
-    #         "Disease" = c("Positive"),
-    #         "Infected" = c(input$DeparturePrevalence),
-    #         "Uninfected" = c(1 - input$DeparturePrevalence)
-    #     ), rownames = FALSE, colnames = TRUE, digits = 2
-    # )
+    # 3.1a Build a data frame to store the post-arrival disease prevalence
+    PostArrivalDiseasePrevalencePercentage <- reactive({
+        PostArrivalDiseasePrevalencePercentageLabels = c("Infected", "Uninfected")
+        PostArrivalDiseasePrevalencePercentageValues = c(1, 2)
+        data.frame(Status = PostArrivalDiseasePrevalencePercentageLabels, Percentage = PostArrivalDiseasePrevalencePercentageValues)
+    })
     
-    output$PreDeparturePostTestPercentages <- renderTable(
-        data.frame(
-            "Test" = c("Positive", "Negative"),
-            "Infected" = c(input$DepartureTestSensitivity, 100 - input$DepartureTestSensitivity),
-            "Uninfected" = c(100 - input$DepartureTestSpecificity, input$DepartureTestSensitivity)
-        ), rownames = FALSE, colnames = TRUE, digits = 2
+    # 3.1b Render a table to display the post-arrival disease prevalence
+    output$PostArrivalDiseasePrevalencePercentageTable <- renderDataTable(
+        PostArrivalDiseasePrevalencePercentage(),
+        options = list(dom = 't')
     )
-    
-    output$PreDeparturePostTestCount <- renderTable(
-        data.frame(
-            "Test" = c("Positive", "Negative"),
-            "Infected" = c(input$DepartureTestSensitivity * input$PopulationCount, (100 - input$DepartureTestSensitivity) * input$PopulationCount),
-            "Uninfected" = c((100 - input$DepartureTestSpecificity) * input$PopulationCount, input$DepartureTestSensitivity * input$PopulationCount)
-        ), rownames = FALSE, colnames = TRUE, digits = 0
-    )
-    
 }
 
 ###############################################################################
