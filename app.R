@@ -46,7 +46,7 @@ ui <- fluidPage(
             hr(),
             
             # Origin characteristics
-            h3("Origin characteristics"),
+            h3("Origin"),
             selectInput(inputId = "DepartureState", label = "Departure state", choices = states),
             selectInput(inputId = "DeparturePrevalenceChoice", label = "Disease prevalence at origin", choices = list("Automatic (based on data for that state)", "Manual (enter your own)")),
             conditionalPanel(
@@ -56,7 +56,7 @@ ui <- fluidPage(
             
             # Destination characteristics
             hr(),
-            h3("Destination characteristics"),
+            h3("Destination"),
             selectInput(inputId = "ArrivalState", label = "Arrival state", choices = states),
             selectInput(inputId = "ArrivalPrevalenceChoice", label = "Disease prevalence at destination", choices = list("Automatic (based on medical for that state)", "Manual (enter your own)")),
             conditionalPanel(
@@ -66,7 +66,7 @@ ui <- fluidPage(
             
             # Population characteristics
             hr(),
-            h3("Population characteristics"),
+            h3("Population"),
             selectInput(inputId = "PopulationCountChoice", label = "Air traveler count", choices = list("Automatic (based on 2019 O&D traffic)", "Manual (enter your own)")),
             conditionalPanel(
                 condition = "input.PopulationCountChoice == 'Manual (enter your own)'",
@@ -80,7 +80,7 @@ ui <- fluidPage(
 
             # Pre-departure test characteristics
             hr(),
-            h3("Pre-departure test characteristics"),
+            h3("Pre-departure test"),
             selectInput(inputId = "DepartureTestMethod", label = "Select a testing method", choices = list("None", "Typical RT-PCR", "Typical RT-LAMP", "Typical RT-RPA", "Typical CRISPR-CaS", "Typical RAT", "Manual (design your own)")),
             conditionalPanel(
                 condition = "input.DepartureTestMethod == 'Manual (design your own)'",
@@ -95,7 +95,7 @@ ui <- fluidPage(
 
             # Post-arrival test characteristics
             hr(),
-            h3("Post-arrival test characteristics"),
+            h3("Post-arrival test"),
             selectInput(inputId = "ArrivalTestMethod", label = "Select a testing method", choices = list("None", "Typical RT-PCR", "Typical RT-LAMP", "Typical RT-RPA", "Typical CRISPR-CaS", "Typical RAT", "Manual (design your own)")),
             conditionalPanel(
                 condition = "input.ArrivalTestMethod == 'Manual (design your own)'",
