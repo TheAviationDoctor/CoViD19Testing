@@ -52,16 +52,15 @@ ui <- fluidPage(
         
         sidebarPanel(
 
-            # Title
-            h2("Model inputs"),
+            #Title
+            h3("Model inputs"),
             hr(),
             
             # Origin characteristics
-            h3("Origin"),
-            radioButtons(inputId = "DeparturePrevalenceChoice", label = "Disease point prevalence at origin", choices = list("Manual (enter your own)", "Automatic (based on state data)")),
+            radioButtons(inputId = "DeparturePrevalenceChoice", label = "Disease prevalence at origin", choices = list("Manual (enter your own)", "Automatic (based on state data)")),
             conditionalPanel(
                 condition = "input.DeparturePrevalenceChoice == 'Manual (enter your own)'",
-                sliderInput(inputId = "DeparturePrevalence", label = "Select a disease point prevalence at origin", min=0, max=1, value=.04)
+                sliderInput(inputId = "DeparturePrevalence", label = "", min=0, max=1, value=.04)
             ),
             conditionalPanel(
                 condition = "input.DeparturePrevalenceChoice == 'Automatic (based on state data)'",
@@ -70,11 +69,10 @@ ui <- fluidPage(
             
             # Destination characteristics
             hr(),
-            h3("Destination"),
-            radioButtons(inputId = "ArrivalPrevalenceChoice", label = "Disease point prevalence at destination", choices = list("Manual (enter your own)", "Automatic (based on state data)")),
+            radioButtons(inputId = "ArrivalPrevalenceChoice", label = "Disease  prevalence at destination", choices = list("Manual (enter your own)", "Automatic (based on state data)")),
             conditionalPanel(
                 condition = "input.ArrivalPrevalenceChoice == 'Manual (enter your own)'",
-                sliderInput(inputId = "ArrivalPrevalence", label = "Select a disease point prevalence at destination", min=0, max=1, value=.12)
+                sliderInput(inputId = "ArrivalPrevalence", label = "", min=0, max=1, value=.12)
             ),
             conditionalPanel(
                 condition = "input.ArrivalPrevalenceChoice == 'Automatic (based on state data)'",
@@ -83,17 +81,23 @@ ui <- fluidPage(
             
             # Population characteristics
             hr(),
-            h3("Population"),
-            radioButtons(inputId = "PopulationCountChoice", label = "Air traveler count", choices = list("Manual (enter your own)", "Automatic (based on 2019 O&D traffic for that pair)")),
+            radioButtons(inputId = "PopulationCountChoice", label = "Number of air travelers", choices = list("Manual (enter your own)", "Automatic (based on 2019 O&D traffic for that pair)")),
             conditionalPanel(
                 condition = "input.PopulationCountChoice == 'Manual (enter your own)'",
-                sliderInput(inputId = "PopulationCount", label = "Select the air traveler count", min=0, max=4.5*10^9, value=2.2*10^9)
+                sliderInput(inputId = "PopulationCount", label = "", min=0, max=4.5*10^9, value=2.2*10^9)
             ),
 
             # Pre-departure test characteristics
             hr(),
-            h3("Pre-departure test"),
-            selectInput(inputId = "DepartureTestMethod", label = "Select a testing method", choices = list("None", "Typical RT-PCR", "Typical RT-LAMP", "Typical RT-RPA", "Typical CRISPR-CaS", "Typical RAT", "Manual (design your own)")),
+            radioButtons(inputId = "DepartureTestSampleChoice", label = "Pre-departure test", choices = list("None", "Sample-based (enter a percentage)", "Systematic (all air travelers)")),
+            conditionalPanel(
+                condition = "input.DepartureTestSampleChoice == 'Sample-based (enter a percentage)'",
+                sliderInput(inputId = "DepartureTestSampleSize", label = "Sample size", min=0, max=100, value=100)
+            ),
+            conditionalPanel(
+                condition = "input.DepartureTestSampleChoice != 'None'",
+                selectInput(inputId = "DepartureTestMethod", label = "Method", choices = list("None", "Typical RT-PCR", "Typical RT-LAMP", "Typical RT-RPA", "Typical CRISPR-CaS", "Typical RAT", "Manual (design your own)")),
+            ),
             conditionalPanel(
                 condition = "input.DepartureTestMethod == 'Manual (design your own)'",
                 sliderInput(inputId = "DepartureTestLimitOfDetection", label = "Limit of detection (copies/ml)", min=0, max=10^4, value=1000),
@@ -104,17 +108,19 @@ ui <- fluidPage(
                 condition = "input.DepartureTestMethod != 'None'",
                 sliderInput(inputId = "DaysBeforeDeparture", label = "Days before departure (0 for day of travel)", min=0, max=7, step=1, value=1),
             ),
-            radioButtons(inputId = "DepartureTestSampleChoice", label = "Proportion of departing travelers being tested", choices = list("Systematic testing (all air travelers)", "Sample testing (enter a percentage)")),
-            conditionalPanel(
-                condition = "input.DepartureTestSampleChoice == 'Sample testing (enter a percentage)'",
-                sliderInput(inputId = "DepartureTestSampleSize", label = "Select a proportion of departing travelers to test", min=0, max=100, value=100)
-            ),
             
 
             # Post-arrival test characteristics
             hr(),
-            h3("Post-arrival test"),
-            selectInput(inputId = "ArrivalTestMethod", label = "Select a testing method", choices = list("None", "Typical RT-PCR", "Typical RT-LAMP", "Typical RT-RPA", "Typical CRISPR-CaS", "Typical RAT", "Manual (design your own)")),
+            radioButtons(inputId = "ArrivalTestSampleChoice", label = "Post-arrival test", choices = list("None", "Sample-based (enter a percentage)", "Systematic (all air travelers)")),
+            conditionalPanel(
+                condition = "input.ArrivalTestSampleChoice == 'Sample-based (enter a percentage)'",
+                sliderInput(inputId = "ArrivalTestSampleSize", label = "Sample size", min=0, max=100, value=100)
+            ),
+            conditionalPanel(
+                condition = "input.ArrivalTestSampleChoice != 'None'",
+                selectInput(inputId = "ArrivalTestMethod", label = "Method", choices = list("None", "Typical RT-PCR", "Typical RT-LAMP", "Typical RT-RPA", "Typical CRISPR-CaS", "Typical RAT", "Manual (design your own)")),
+            ),
             conditionalPanel(
                 condition = "input.ArrivalTestMethod == 'Manual (design your own)'",
                 sliderInput(inputId = "ArrivalTestLimitOfDetection", label = "Limit of detection (copies/ml)", min=0, max=10^4, value=1000),
@@ -123,12 +129,7 @@ ui <- fluidPage(
             ),
             conditionalPanel(
                 condition = "input.ArrivalTestMethod != 'None'",
-                sliderInput(inputId = "DaysAfterArrival", label = "Days after arrival (0 for day of travel)", min=0, max=7, step=1, value=1)
-            ),
-            radioButtons(inputId = "ArrivalTestTestSampleChoice", label = "Proportion of arriving travelers being tested", choices = list("Systematic testing (all air travelers)", "Sample testing (enter a percentage)")),
-            conditionalPanel(
-                condition = "input.ArrivalTestTestSampleChoice == 'Sample testing (enter a percentage)'",
-                sliderInput(inputId = "ArrivalTestTestSampleSize", label = "Select a proportion of arriving travelers to test", min=0, max=100, value=100)
+                sliderInput(inputId = "DaysAfterArrival", label = "Days after arrival (0 for day of travel)", min=0, max=7, step=1, value=1),
             ),
             
         ),
@@ -138,10 +139,6 @@ ui <- fluidPage(
         #######################################################################
         
         mainPanel(
-            
-            # Title
-            h2("Model outputs"),
-            hr(),
             
             ###################################################################
             # 1. PRE-DEPARTURE PRE-TEST OUTCOMES                              #
@@ -406,13 +403,13 @@ server <- function(input, output) {
     
     output$DepartureStateSelector <- renderUI({
         tagList(
-            selectInput(inputId = "DepartureState", label = "Select a departure state", choices = OriginDiseasePrevalenceTable %>% select(Country))
+            selectInput(inputId = "DepartureState", label = "", choices = OriginDiseasePrevalenceTable %>% select(Country))
         )
     })
 
     output$ArrivalStateSelector <- renderUI({
         tagList(
-            selectInput(inputId = "ArrivalState", label = "Select an arrival state", choices = OriginDiseasePrevalenceTable %>% select(Country))
+            selectInput(inputId = "ArrivalState", label = "", choices = OriginDiseasePrevalenceTable %>% select(Country))
         )
     })
     
