@@ -4,17 +4,21 @@
 
 # Load libraries
 library(DT)
+library(pins)
 library(shiny)
+library(shinycssloaders)
 library(tidyverse)
 
 # Clear the console
-cat("\014")
+#cat("\014")
 
 ###############################################################################
 # VARIABLE DECLARATION                                                        #
 ###############################################################################
 
+AppTitle <- "Air travel COVID-19 screening simulator"
 states <- list("Afghanistan","Albania","Algeria","Angola","Anguilla","Antigua and Barbuda","Argentina","Armenia","Aruba","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bermuda","Bhutan","Bolivia","Bonaire Saint Eustatius & Saba","Bosnia and Herzegovina","Botswana","Brazil","British Virgin Islands","Brunei Darussalam","Bulgaria","Burkina Faso","Burundi","Cambodia","Cameroon","Canada","Cape Verde","Cayman Islands","Central African Republic","Chad","Chile","China","Chinese Taipei","Cocos (Keeling) Islands","Colombia","Comoros","Congo","Cook Islands","Costa Rica","Croatia","Cuba","Curacao","Cyprus","Czech Republic","Democratic Republic of the Congo","Denmark","Djibouti","Dominica","Dominican Republic","East Timor","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Ethiopia","Falkland Islands","Fiji","Finland","France","French Guiana","French Polynesia","Gabon","Gambia","Georgia","Germany","Ghana","Gibraltar","Greece","Greenland","Grenada and South Grenadines","Guadeloupe","Guatemala","Guinea","Guinea Bissau","Guyana","Haiti","Honduras","Hong Kong (SAR)","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Ivory Coast (Cote d'Ivoire)","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Libya","Lithuania","Luxembourg","Macau (SAR)","Macedonia","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Martinique","Mauritania","Mauritius","Mayotte","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Caledonia","New Zealand","Nicaragua","Niger","Nigeria","Norfolk Island","North Korea","Norway","Oman","Pakistan","Palau","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Reunion","Romania","Russian Federation","Rwanda","Saint Helena","Saint Kitts and Nevis","Saint Lucia","Saint Pierre and Miquelon","Saint Vincent and Grenadines","Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Sint Maarten","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Tajikistan","Tanzania","Thailand","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Turks and Caicos Islands","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu","Venezuela","Vietnam","Wallis and Futuna Islands","Western Sahara","Western Samoa","Yemen","Zambia","Zimbabwe")
+DiseasePrevalenceURL <- "https://opendata.ecdc.europa.eu/covid19/casedistribution/csv"
 
 ###############################################################################
 # USER INTERFACE LOGIC                                                        #
@@ -30,7 +34,7 @@ ui <- fluidPage(
     ),
     
     # App title
-    titlePanel("Air travel COVID-19 screening simulator"),
+    titlePanel(AppTitle),
     hr(),
     
     sidebarLayout(
@@ -50,11 +54,11 @@ ui <- fluidPage(
             selectInput(inputId = "DeparturePrevalenceChoice", label = "Disease prevalence at origin", choices = list("Manual (enter your own)", "Automatic (based on state data)")),
             conditionalPanel(
                 condition = "input.DeparturePrevalenceChoice == 'Manual (enter your own)'",
-                sliderInput(inputId = "DeparturePrevalence", label = "Select a disease prevalence at origin", min=0, max=1, value=.04),
+                sliderInput(inputId = "DeparturePrevalence", label = "Select a disease prevalence at origin", min=0, max=1, value=.04)
             ),
             conditionalPanel(
                 condition = "input.DeparturePrevalenceChoice == 'Automatic (based on state data)'",
-                selectInput(inputId = "DepartureState", label = "Select a departure state", choices = states),
+                selectInput(inputId = "DepartureState", label = "Select a departure state", choices = states)
             ),
             
             # Destination characteristics
@@ -63,11 +67,11 @@ ui <- fluidPage(
             selectInput(inputId = "ArrivalPrevalenceChoice", label = "Disease prevalence at destination", choices = list("Manual (enter your own)", "Automatic (based on state data)")),
             conditionalPanel(
                 condition = "input.ArrivalPrevalenceChoice == 'Manual (enter your own)'",
-                sliderInput(inputId = "ArrivalPrevalence", label = "Select a disease prevalence at destination", min=0, max=1, value=.12),
+                sliderInput(inputId = "ArrivalPrevalence", label = "Select a disease prevalence at destination", min=0, max=1, value=.12)
             ),
             conditionalPanel(
                 condition = "input.ArrivalPrevalenceChoice == 'Automatic (based on state data)'",
-                selectInput(inputId = "ArrivalState", label = "Select an arrival state", choices = states),
+                selectInput(inputId = "ArrivalState", label = "Select an arrival state", choices = states)
             ),
             
             # Population characteristics
@@ -76,7 +80,7 @@ ui <- fluidPage(
             selectInput(inputId = "PopulationCountChoice", label = "Air traveler count", choices = list("Manual (enter your own)", "Automatic (based on 2019 O&D traffic for that pair)")),
             conditionalPanel(
                 condition = "input.PopulationCountChoice == 'Manual (enter your own)'",
-                sliderInput(inputId = "PopulationCount", label = "Select the air traveler count", min=0, max=4.5*10^9, value=2.2*10^9),
+                sliderInput(inputId = "PopulationCount", label = "Select the air traveler count", min=0, max=4.5*10^9, value=2.2*10^9)
             ),
 
             # Pre-departure test characteristics
@@ -96,7 +100,7 @@ ui <- fluidPage(
             selectInput(inputId = "DepartureTestSampleChoice", label = "Proportion of departing travelers being tested", choices = list("Systematic testing (all air travelers)", "Sample testing (enter a percentage)")),
             conditionalPanel(
                 condition = "input.DepartureTestSampleChoice == 'Sample testing (enter a percentage)'",
-                sliderInput(inputId = "DepartureTestSampleSize", label = "Select a proportion of departing travelers to test", min=0, max=100, value=100),
+                sliderInput(inputId = "DepartureTestSampleSize", label = "Select a proportion of departing travelers to test", min=0, max=100, value=100)
             ),
             
 
@@ -112,12 +116,12 @@ ui <- fluidPage(
             ),
             conditionalPanel(
                 condition = "input.ArrivalTestMethod != 'None'",
-                sliderInput(inputId = "DaysAfterArrival", label = "Days after arrival (0 for day of travel)", min=0, max=7, step=1, value=1),
+                sliderInput(inputId = "DaysAfterArrival", label = "Days after arrival (0 for day of travel)", min=0, max=7, step=1, value=1)
             ),
             selectInput(inputId = "ArrivalTestTestSampleChoice", label = "Proportion of arriving travelers being tested", choices = list("Systematic testing (all air travelers)", "Sample testing (enter a percentage)")),
             conditionalPanel(
                 condition = "input.ArrivalTestTestSampleChoice == 'Sample testing (enter a percentage)'",
-                sliderInput(inputId = "ArrivalTestTestSampleSize", label = "Select a proportion of arriving travelers to test", min=0, max=100, value=100),
+                sliderInput(inputId = "ArrivalTestTestSampleSize", label = "Select a proportion of arriving travelers to test", min=0, max=100, value=100)
             ),
             
         ),
@@ -137,65 +141,104 @@ ui <- fluidPage(
             ###################################################################
             
             h3("1. Pre-departure, pre-test outcomes"),
-            fluidRow(
-                column(12, align = "center",
-                    em("1.1. Probability that a departing air traveler is infected, based on the disease prevalence at origin."),
+            tabsetPanel(
+                
+                # Overview panel
+                tabPanel("Overview",
+                    br(),
+                    p(align = "center", "This model step uses the assumed point prevalence of COVID-19 in the state of origin to calculate the likelihood that any given individual who reports for outbound travel is infected. Click on the Tables tab to see the results."),
                 ),
-            ),
-            fluidRow(
-                column(6,
-                    dataTableOutput("PreDepartureDiseasePrevalencePercentageTable"),
+                
+                # Table panel
+                tabPanel("Tables",
+                    br(),
+                
+                    # Table 1.1
+                    p(align = "center", "Table 1.1. Probability that a departing air traveler is infected, based on the disease prevalence at origin"),
+                    fluidRow(
+                        column(6, withSpinner(dataTableOutput("PreDepartureDiseasePrevalencePercentageTable"))),
+                        column(6, withSpinner(dataTableOutput("PreDepartureDiseasePrevalenceHeadcountTable")))
+                    )
                 ),
-                column(6,
-                       dataTableOutput("PreDepartureDiseasePrevalenceHeadcountTable"),
+                
+                # Chart panel
+                tabPanel("Chart",
+                    br(),
+                    p(align = "center", "Lorem ipsum dolor sit amet.")
+                ),
+                
+                # Data panel
+                tabPanel("Data", withSpinner(dataTableOutput("OriginDiseasePrevalenceTable"))),
+                
+                # Explanation panel
+                tabPanel("Explanation",
+                    br(),
+                    conditionalPanel(
+                        condition = "input.DeparturePrevalenceChoice == 'Manual (enter your own)'",
+                        p(align = "center", "The point prevalence at origin is calculated using the latest 14-day new cases of COVID-19 per 100K people in the state of origin, as reported daily by the E.U. CDC. Then, the incidence is multiplied by the mean infectious period of COVID-19 of 12 days, as estimated by the U.S. CDC. Next, a coefficient of 40% of all cases is applied to account for non-symptomatic cases, as estimated by the U.S. CDC. Lastly, the result is divided by 100 to express the point prevalence as a percentage. This calculation method conforms to the ICAO CAPSCA guidance.")
+                    ),
                 )
+                
             ),
             hr(),
-
+            
             ###################################################################
             # 2. PRE-DEPARTURE POST-TEST OUTCOMES                             #
             ###################################################################
 
             h3("2. Pre-departure, post-test outcomes"),
-            fluidRow(
-                column(12, align = "center",
-                       em("2.1. Probability that a departing air traveler tests positive/negative."),
+            tabsetPanel(
+                
+                # Overview panel
+                tabPanel("Overview",
+                    br(),
+                    p(align = "center", "This model step uses the point prevalence at origin and the pre-departure test design characteristics to calculate the likelihood of test results independently of everything else (table 2.1), of test results given an infection status (table 2.2), and of infection status given a test result (table 2.3). Click on the Tables tab to see the results."),
                 ),
-            ),
-            fluidRow(
-                column(6,
-                       dataTableOutput("PreDepartureTestPercentageTable"),
+                
+                # Table panel
+                tabPanel("Tables",
+                    br(),
+                    
+                    # Table 2.1
+                    p(align = "center", "Table 2.1. Probability that a departing air traveler tests positive/negative"),
+                    fluidRow(
+                        column(6, withSpinner(dataTableOutput("PreDepartureTestPercentageTable"))),
+                        column(6, withSpinner(dataTableOutput("PreDepartureTestHeadcountTable")))
+                    ),
+                    br(),
+                    
+                    # Table 2.2
+                    p(align = "center", "Table 2.2. Probability that a departing air traveler tests positive/negative, given that they are infected/uninfected."),
+                    fluidRow(
+                        column(6, withSpinner(dataTableOutput("PreDepartureTestPriorPercentageTable"))),
+                        column(6, withSpinner(dataTableOutput("PreDepartureTestPriorHeadcountTable")))
+                    ),
+                    br(),
+                    
+                    # Table 2.3
+                    p(align = "center", "Table 2.3. Probability that a departing air traveler is infected/uninfected, given that they test positive/negative."),
+                    fluidRow(
+                        column(6, withSpinner(dataTableOutput("PreDepartureTestPosteriorPercentageTable"))),
+                        column(6, withSpinner(dataTableOutput("PreDepartureTestPosteriorHeadcountTable")))
+                    ),
                 ),
-                column(6,
-                       dataTableOutput("PreDepartureTestHeadcountTable"),
-                )
-            ),
-            br(),
-            fluidRow(
-                column(12, align = "center",
-                       em("2.2. Probability that a departing air traveler tests positive/negative, given that they are infected/uninfected."),
+                
+                # Chart panel
+                tabPanel("Chart",
+                    br(),
+                    p(align = "center", "Lorem ipsum dolor sit amet.")
                 ),
-            ),
-            fluidRow(
-                column(6,
-                       dataTableOutput("PreDepartureTestPriorPercentageTable"),
+                
+                # Data panel
+                tabPanel("Data",
+                    br(),
+                    p(align = "center", "Lorem ipsum dolor sit amet.")
                 ),
-                column(6,
-                       dataTableOutput("PreDepartureTestPriorHeadcountTable"),
-                )
-            ),
-            br(),
-            fluidRow(
-                column(12, align = "center",
-                       em("2.3. Probability that a departing air traveler is infected/uninfected, given that they test positive/negative."),
-                ),
-            ),
-            fluidRow(
-                column(6,
-                       dataTableOutput("PreDepartureTestPosteriorPercentageTable"),
-                ),
-                column(6,
-                       dataTableOutput("PreDepartureTestPosteriorHeadcountTable"),
+                
+                # Explanation panel
+                tabPanel("Explanation",
+                     br(),
+                     p(align = "center", "Lorem ipsum dolor sit amet.")
                 )
             ),
             hr(),
@@ -205,31 +248,91 @@ ui <- fluidPage(
             ###################################################################
 
             h3("3. Post-arrival, pre-test outcomes"),
-            fluidRow(
-                column(6,
-                       em("3.1. Disease prevalence among air travelers upon arrival (percentage)."),
+            tabsetPanel(
+                
+                # Overview panel
+                tabPanel("Overview",
+                    br(),
+                    p(align = "center", "Lorem ipsum dolor sit amet."),
                 ),
-                column(6,
-                       em("3.2. Disease prevalence among air travelers upon arrival (headcount)"),
-                )
-            ),
-            fluidRow(
-                column(6,
-                       dataTableOutput("PostArrivalDiseasePrevalencePercentageTable"),
+                
+                # Table panel
+                tabPanel("Tables",
+                    br(),
+                    
+                    # Table 3.1
+                    p(align = "center", "Table 3.1. Disease prevalence among air travelers upon arrival (percentage)"),
+                    fluidRow(
+                        column(6, withSpinner(dataTableOutput("PostArrivalDiseasePrevalencePercentageTable"))),
+                        column(6, withSpinner(dataTableOutput("PostArrivalDiseasePrevalenceHeadcountTable")))
+                    ),
                 ),
-                column(6,
-                       dataTableOutput("PostArrivalDiseasePrevalenceHeadcountTable"),
+                
+                # Chart panel
+                tabPanel("Chart",
+                    br(),
+                    p(align = "center", "Lorem ipsum dolor sit amet."),
+                ),
+                
+                # Data panel
+                tabPanel("Data",
+                    br(),
+                    p(align = "center", "Lorem ipsum dolor sit amet."),
+                ),
+                
+                # Explanation panel
+                tabPanel("Explanation",
+                    br(),
+                    p(align = "center", "Lorem ipsum dolor sit amet.")
                 )
+                
             ),
             hr(),
-            
+
             ###################################################################
             # 4. POST-ARRIVAL POST-TEST OUTCOMES                              #
             ###################################################################
 
             h3("4. Post-arrival, post-test outcomes"),
-            p("This will show the risk on arrival at destination."),
-            hr(),
+            tabsetPanel(
+            
+                # Overview panel
+                tabPanel("Overview",
+                    br(),
+                    p(align = "center", "Lorem ipsum dolor sit amet."),
+                ),
+                
+                # Table panel
+                tabPanel("Tables",
+                    br(),
+                
+                    # Table 3.1
+                    p(align = "center", "Table 4.1. )"),
+                    fluidRow(
+                        column(6, withSpinner(dataTableOutput("PostArrivalPostTestPercentageTable"))),
+                        column(6, withSpinner(dataTableOutput("PostArrivalPostTestHeadcountTable")))
+                    ),
+                ),
+                
+                # Chart panel
+                tabPanel("Chart",
+                    br(),
+                    p(align = "center", "Lorem ipsum dolor sit amet."),
+                ),
+                
+                # Data panel
+                tabPanel("Data",
+                    br(),
+                    p(align = "center", "Lorem ipsum dolor sit amet."),
+                ),
+                
+                # Explanation panel
+                tabPanel("Explanation",
+                    br(),
+                    p(align = "center", "Lorem ipsum dolor sit amet.")
+                )
+                
+            )
         )
     )
 )
@@ -239,6 +342,36 @@ ui <- fluidPage(
 ###############################################################################
 
 server <- function(input, output) {
+
+    ###############################################################################
+    # CALCULATE DISEASE PREVALENCE                                                #
+    ###############################################################################
+    
+    # Import the European Centre for Disease Prevention and Control incidence data and calculate the prevalence by country
+    OriginDiseasePrevalenceTable <- pin(DiseasePrevalenceURL) %>%
+        read_csv(na = "", col_types = list(col_date(format = "%d/%m/%Y"), col_integer(), col_integer(), col_integer(), col_integer(), col_integer(), col_factor(), col_factor(), col_factor(), col_integer(), col_factor(), col_double())) %>%
+        rename("Date" = "dateRep", "Day" = "day", "Month" = "month", "Year" = "year", "Cases" = "cases", "Deaths" = "deaths", "Country" = "countriesAndTerritories", "CountryTwoLetterCode" = "geoId", "CountryThreeLetterCode" = "countryterritoryCode", "Population" = "popData2019", "Continent" = "continentExp", "Incidence" = "Cumulative_number_for_14_days_of_COVID-19_cases_per_100000") %>%
+        filter(Continent != "Other") %>%
+        mutate(Country = gsub("_", " ", Country)) %>%
+        mutate(Prevalence = Incidence * 12 / (1 - .6) / 100) %>%
+        group_by(Country) %>% filter(Date == max(Date))
+    
+    # Render selected columns from the prevalence table
+    OriginDiseasePrevalenceColumns <- c("Date","Country", "Population", "Incidence", "Prevalence")
+    output$OriginDiseasePrevalenceTable <- renderDataTable(
+        datatable(
+            OriginDiseasePrevalenceTable %>%
+                select(OriginDiseasePrevalenceColumns),
+            rownames = NULL,
+            options = list(dom = 't', paging = FALSE)
+        ) %>%
+            formatCurrency(columns = c("Population"), currency = "", digits = 0) %>%
+            formatCurrency(columns = c("Incidence", "Prevalence"), currency = "", digits = 2) %>%
+            formatStyle(columns = OriginDiseasePrevalenceColumns,  color = "#1E32FA")
+    )
+    
+    # ToDo
+    DeparturePrevalence <- 1
 
     ###########################################################################
     # INPUT VARIABLES                                                         #
@@ -366,7 +499,6 @@ server <- function(input, output) {
     # 3. POST-ARRIVAL PRE-TEST OUTCOMES                                       #
     ###########################################################################
     
-
 }
 
 ###############################################################################

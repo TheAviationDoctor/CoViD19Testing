@@ -3,8 +3,8 @@
 This R Shiny app (available at https://theaviationdoctor.shinyapps.io/covid19testing/) is meant to test different scenarios of air traveler screening for COVID-19 at departure and/or arrival. It models the following variables:
 
 ### Disease characteristics
-- Disease prevalence in the departure state (derived from published medical data, or entered manually by the user)
-- Disease prevalence in the arrival state (derived from published medical data, or entered manually by the user)
+- Point prevalence of COVID-19 in the departure state (derived from published medical data, or entered manually by the user)
+- Point prevalence of COVID-19 in the arrival state (derived from published medical data, or entered manually by the user)
 - Viral load ramp-up (to detectability)
 
 ### Passenger characteristics
