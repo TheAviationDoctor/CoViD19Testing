@@ -33,6 +33,7 @@ LabelPanelOutputHeader4 <- "4. Post-arrival, post-test outcomes"
 
 # URLs
 URLPrevalence <- "https://opendata.ecdc.europa.eu/covid19/casedistribution/csv"
+URLTraffic <- "https://raw.githubusercontent.com/TheAviationDoctor/CoViD19Testing/main/data/traffic2019.csv"
 
 ###############################################################################
 # USER INTERFACE LOGIC                                                        #
@@ -164,7 +165,7 @@ ui <- fluidPage(
                     br(),
                     fluidRow(
                         column(6, DT::dataTableOutput("PrevalenceAssumptionsTable")),
-                        column(6, )
+                        column(6, DT::dataTableOutput("TrafficAssumptionsTable"))
                     )
                 ),
 
@@ -173,7 +174,7 @@ ui <- fluidPage(
                     br(),
                 
                     # Table 1.3.1.
-                    p(align = "center", "1.3.1. Probability that a departing air traveler is infected, based on the disease prevalence at origin"),
+                    p(align = "center", "Probability that a departing air traveler is infected, based on the disease prevalence at origin"),
                     fluidRow(
                         column(6, withSpinner(DT::dataTableOutput("PreDeparturePrevalencePercentageTable"))),
                         column(6, withSpinner(DT::dataTableOutput("PreDeparturePrevalenceHeadcountTable")))
@@ -183,7 +184,7 @@ ui <- fluidPage(
                 # Chart panel
                 tabPanel("1.4. Charts",
                     br(),
-                    p(align = "center", "Lorem ipsum dolor sit amet.")
+                    plotOutput("PrevalenceChart")
                 ),
                 
                 # Data panel
@@ -381,6 +382,29 @@ server <- function(input, output) {
         mutate(Prevalence = Incidence * 12 / (1 - .6) / 100000) %>%           # Apply the CAPSCPA formula to account for infectious period (mean 12 days) and non-symptomatic and unreported cases (40% of total cases), then convert to a percentage
         group_by(Country) %>% filter(Date == max(Date))                       # Display only the latest row for each country
 
+    # Import and wrangle the 2019 origin-destination passenger traffic
+    TrafficTable <- pin(URLTraffic) %>%
+        read_csv(na = "", col_types = list(col_factor(), col_factor(), col_integer()))
+    
+    ###########################################################################
+    # VARIABLE DECLARATION                                                    #
+    ###########################################################################
+    
+    # Set origin prevalence to either that of the selected origin state or to that defined manually by the user
+    OriginPrevalence <- reactive({
+        ifelse(input$OriginPrevalenceChoice == "Automatic (based on latest state data)", EUCDCTable[ which(EUCDCTable$Country == input$OriginState), 13, drop = TRUE], input$OriginPrevalence / 100)
+    })
+    
+    # Set destination prevalence to either that of the selected destination state or to that defined manually by the user
+    DestinationPrevalence <- reactive({
+        ifelse(input$DestinationPrevalenceChoice == "Automatic (based on latest state data)", EUCDCTable[ which(EUCDCTable$Country == input$DestinationState), 13, drop = TRUE], input$DestinationPrevalence / 100)
+    })
+    
+    # Set traffic to either that of the origin-destination pair for 2019 or to that defined manually by the user
+    Traffic <- reactive({
+        ifelse(input$PopulationCountChoice == "Automatic (based on 2019 O&D traffic for that pair)", max(TrafficTable[ which(TrafficTable$Origin == input$OriginState & TrafficTable$Destination == input$DestinationState), 3, drop = TRUE],0), input$PopulationCount)
+    })
+    
     ###########################################################################
     # 0. INPUTS PANEL                                                         #
     ###########################################################################
@@ -388,30 +412,20 @@ server <- function(input, output) {
     # Render the origin state selector in the inputs panel
     output$OriginStateSelector <- renderUI({
         tagList(
-            selectInput(inputId = "OriginState", label = "", choices = EUCDCTable %>% select(Country))
+            selectInput(inputId = "OriginState", label = "", choices = EUCDCTable %>% select(Country), selected = "Australia")
         )
     })
 
     # Render the destination state selector in the inputs panel (same as origin, except that we exclude the selected origin country since we only model international traffic and not domestic)
     output$DestinationStateSelector <- renderUI({
         tagList(
-            selectInput(inputId = "DestinationState", label = "", choices = EUCDCTable[which(EUCDCTable$Country != input$OriginState), 7])
+            selectInput(inputId = "DestinationState", label = "", choices = EUCDCTable[which(EUCDCTable$Country != input$OriginState), 7], selected = "China")
         )
     })
 
     ###########################################################################
     # 1. PRE-DEPARTURE PRE-TEST OUTCOMES                                      #
     ###########################################################################
-
-    # Set origin prevalence to either that of the selected departure state or to that defined manually by the user
-    OriginPrevalence <- reactive({
-        ifelse(input$OriginPrevalenceChoice == "Automatic (based on latest state data)", EUCDCTable[ which(EUCDCTable$Country == input$OriginState), 13, drop = TRUE], input$OriginPrevalence / 100)
-    })
-    
-    # Set destination prevalence to either that of the selected arrival state or to that defined manually by the user
-    DestinationPrevalence <- reactive({
-        ifelse(input$DestinationPrevalenceChoice == "Automatic (based on latest state data)", EUCDCTable[ which(EUCDCTable$Country == input$DestinationState), 13, drop = TRUE], input$DestinationPrevalence / 100)
-    })
     
         #######################################################################
         # 1.2. INPUTS PANEL                                                   #
@@ -424,9 +438,18 @@ server <- function(input, output) {
                     c("Disease prevalence at origin", "Disease prevalence at destination"),
                     c(OriginPrevalence(), DestinationPrevalence())
                 ),
-                colnames = c("Assumption", "Value"), rownames = NULL, options = list(dom = "t", paging = FALSE)) %>%
+                colnames = c("Assumption", "Value"), rownames = NULL, options = list(dom = "t", ordering = F, paging = FALSE)) %>%
                 formatPercentage(columns = 2, digits = 1) %>%
                 formatStyle(columns = 2,  color = "#1E32FA")
+        )
+
+        output$TrafficAssumptionsTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Assumption" = "Number of passengers",
+                    "Value" = Traffic()
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>% formatCurrency(columns = "Value", currency = "", digits = 0) %>% formatStyle(columns = "Value",  color = "#1E32FA")
         )
 
         #######################################################################
@@ -439,10 +462,9 @@ server <- function(input, output) {
                 data.frame(
                     "Prevalence" = "Percentage",
                     "Infected" = OriginPrevalence(),
-                    "Uninfected" = 1 - OriginPrevalence(),
-                    "Total" = 1
+                    "Uninfected" = 1 - OriginPrevalence()
                 ), rownames = NULL, options = list(dom = "t", ordering = F)
-            ) %>% formatPercentage(columns = c("Infected", "Uninfected","Total"), digits = 1) %>% formatStyle(columns = c("Infected", "Uninfected", "Total"),  color = "#1E32FA")
+            ) %>% formatPercentage(columns = c("Infected", "Uninfected"), digits = 1) %>% formatStyle(columns = c("Infected", "Uninfected"),  color = "#1E32FA")
         )
     
         # 1.3.1. Render the probability (in headcount) that a departing air traveler is infected
@@ -451,14 +473,37 @@ server <- function(input, output) {
                 data.frame(
                     "Prevalence" = "Headcount",
                     "Infected" = OriginPrevalence() * input$PopulationCount,
-                    "Uninfected" = (1 - OriginPrevalence()) * input$PopulationCount,
-                    "Total" = input$PopulationCount
+                    "Uninfected" = (1 - OriginPrevalence()) * input$PopulationCount
                 ), rownames = NULL, options = list(dom = "t", ordering = F)
-            ) %>% formatCurrency(columns = c("Infected", "Uninfected", "Total"), currency = "", digits = 0) %>% formatStyle(columns = c("Infected", "Uninfected", "Total"),  color = "#1E32FA")
+            ) %>% formatCurrency(columns = c("Infected", "Uninfected"), currency = "", digits = 0) %>% formatStyle(columns = c("Infected", "Uninfected"),  color = "#1E32FA")
         )
 
         #######################################################################
-        # 1.4. DATA PANEL                                                     #
+        # 1.4. CHARTS PANEL                                                   #
+        #######################################################################
+        
+        # Render a bar plot to display the disease prevalence at origin and destination
+        output$PrevalenceChart <- renderPlot({
+            ggplot(
+                data = data.frame(
+                    "Location" = c(
+                        ifelse(input$OriginPrevalenceChoice == "Automatic (based on latest state data)", input$OriginState, "Disease prevalence at origin"),
+                        ifelse(input$DestinationPrevalenceChoice == "Automatic (based on latest state data)", input$DestinationState, "Disease prevalence at destination")
+                    ),
+                    "Prevalence" = c(OriginPrevalence(), DestinationPrevalence())
+                ),
+                aes(x = reorder(Location, desc(Location)), y = Prevalence)
+            ) +
+            geom_bar(stat="identity") +
+            theme_classic() +
+            theme(axis.title.x=element_blank()) +
+            scale_y_continuous(labels = scales::percent) +
+            ggtitle(label = "Disease prevalence at origin and destination") +
+            theme(plot.title = element_text(hjust = 0.5))
+        })
+        
+        #######################################################################
+        # 1.5. DATA PANEL                                                     #
         #######################################################################
     
         # Render the prevalence by country for display in the Data panel
