@@ -32,11 +32,13 @@ LabelPanelOutputHeader3 <- "3. Post-arrival, pre-test outcomes"
 LabelPanelOutputHeader4 <- "4. Post-arrival, post-test outcomes"
 
 # Input selectors
-DefaultOriginState <- "Australia"
-DefaultDestinationState <- "China"
+States <- list("Afghanistan", "Albania", "Algeria", "American Samoa", "Andorra", "Angola", "Anguilla", "Antigua and Barbuda", "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bermuda", "Bhutan", "Bolivia (Plurinational State of)", "Bonaire, Sint Eustatius and Saba", "Bosnia and Herzegovina", "Botswana", "Brazil", "British Virgin Islands", "Brunei Darussalam", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Cayman Islands", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Cook Islands", "Costa Rica", "Côte d’Ivoire", "Croatia", "Cuba", "Curaçao", "Cyprus", "Czechia", "Democratic People's Republic of Korea", "Democratic Republic of the Congo", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Falkland Islands (Malvinas)", "Faroe Islands", "Fiji", "Finland", "France", "French Guiana", "French Polynesia", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Gibraltar", "Greece", "Greenland", "Grenada", "Guadeloupe", "Guam", "Guatemala", "Guernsey", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Holy See", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran (Islamic Republic of)", "Iraq", "Ireland", "Isle of Man", "Israel", "Italy", "Jamaica", "Japan", "Jersey", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kosovo", "Kuwait", "Kyrgyzstan", "Lao People's Democratic Republic", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Martinique", "Mauritania", "Mauritius", "Mayotte", "Mexico", "Micronesia (Federated States of)", "Monaco", "Mongolia", "Montenegro", "Montserrat", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Caledonia", "New Zealand", "Nicaragua", "Niger", "Nigeria", "Niue", "North Macedonia", "Northern Mariana Islands (Commonwealth of the)", "Norway", "Occupied Palestinian territory, incl. east Jerusalem", "Oman", "Pakistan", "Palau", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Pitcairn Islands", "Poland", "Portugal", "Puerto Rico", "Qatar", "Republic of Korea", "Republic of Moldova", "Réunion", "Romania", "Russian Federation", "Rwanda", "Saint Barthélemy", "Saint Helena", "Saint Kitts and Nevis", "Saint Lucia", "Saint Martin", "Saint Pierre and Miquelon", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Sint Maarten", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syrian Arab Republic", "Tajikistan", "Thailand", "The United Kingdom", "Timor-Leste", "Togo", "Tokelau", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Turks and Caicos Islands", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Republic of Tanzania", "United States of America", "United States Virgin Islands", "Uruguay", "Uzbekistan", "Vanuatu", "Venezuela (Bolivarian Republic of)", "Viet Nam", "Wallis and Futuna", "Yemen", "Zambia", "Zimbabwe")
+DefaultOriginState <- "United States of America"
+DefaultDestinationState <- "France"
 
 # URLs
 URLIncidence <- "https://covid19.who.int/WHO-COVID-19-global-data.csv"
+URLPopulation <- "https://raw.githubusercontent.com/TheAviationDoctor/CoViD19Testing/main/data/population.csv"
 URLPrevalence <- "https://opendata.ecdc.europa.eu/covid19/casedistribution/csv"
 URLTraffic <- "https://raw.githubusercontent.com/TheAviationDoctor/CoViD19Testing/main/data/traffic2019.csv"
 
@@ -76,8 +78,8 @@ ui <- fluidPage(
             ),
             conditionalPanel(
                 condition = "input.OriginPrevalenceChoice == 'Automatic (based on latest state data)'",
-                uiOutput("OriginStateSelector"),
-                sliderInput(inputId = "IncidenceMovingAverage", label = "Moving average of new cases (days)", min = 1, max = 30, step = 1, value = 14)
+                selectInput(inputId = "OriginState", label = "", choices = States, selected = DefaultOriginState)
+#                uiOutput("OriginStateSelector"),
             ),
             
             # Destination characteristics
@@ -89,9 +91,22 @@ ui <- fluidPage(
             ),
             conditionalPanel(
                 condition = "input.DestinationPrevalenceChoice == 'Automatic (based on latest state data)'",
-                uiOutput("DestinationStateSelector")
+                selectInput(inputId = "DestinationState", label = "", choices = States, selected = DefaultDestinationState)
+#                uiOutput("DestinationStateSelector")
             ),
             
+            # Prevalence characteristics
+            conditionalPanel(
+                hr(),
+                strong("Prevalence calculation options"),
+                br(),
+                br(),
+                condition = "input.OriginPrevalenceChoice == 'Automatic (based on latest state data)' | input.DestinationPrevalenceChoice == 'Automatic (based on latest state data)'",
+                sliderInput(inputId = "IncidenceMovingAverage", label = "Moving average of new cases (days)", min = 1, max = 30, step = 1, value = 14),
+                sliderInput(inputId = "InfectiousPeriod", label = "Infectious period (days)", min = 1, max = 30, step = 1, value = 12),
+                sliderInput(inputId = "NonSymptomaticRate", label = "Non-symptomatic rate", min = 0, max = 100, step = 1, value = 40)
+            ),
+
             # Population characteristics
             hr(),
             radioButtons(inputId = "PopulationCountChoice", label = "Number of air travelers", choices = list("Manual (enter your own)", "Automatic (based on 2019 O&D traffic for that pair)")),
@@ -401,27 +416,34 @@ server <- function(input, output) {
     # IMPORT AND WRANGLE DATA                                                 #
     ###########################################################################
     
-    # Import and wrangle the WHO epidemiological data, then calculate the disease prevalence by country per 100 people using the CAPSCA formula
-    
-    # Set duration of moving average for cumulative incidence calculation
-    IncidenceMovingAverage <- reactive ({
-        input$IncidenceMovingAverage
-    })
+    # # Set duration of moving average for cumulative incidence calculation
+    # IncidenceMovingAverage <- reactive ({
+    #     input$IncidenceMovingAverage
+    # })
 
+    # Import and wrangle the population data
+    PopulationTable <- pin(URLPopulation) %>%
+        read_csv(na = "", col_types = list(col_factor(), col_integer()))
+    
+    # Import and wrangle the 2019 origin-destination passenger traffic
+    TrafficTable <- pin(URLTraffic) %>%
+        read_csv(na = "", col_types = list(col_factor(), col_factor(), col_integer()))
+    
+    # Import and wrangle the WHO epidemiological data, then calculate the disease prevalence by country per 100 people using the CAPSCA formula
     PrevalenceTable <- reactive({
-        pin(URLIncidence) %>%
-        read_csv(na = "", col_types = list(col_date(format = "%Y-%m-%d"), col_factor(), col_factor(), col_factor(), col_integer(), col_integer(), col_integer(), col_integer())) %>%
-        select("Date_reported", "Country", "New_cases") %>%
-        rename("Date" = "Date_reported", "Incidence" = "New_cases") %>%
-        remove_missing(vars = "Incidence") %>%
-        group_by(Country) %>%
-        arrange(desc(Date)) %>%
-        slice(1:IncidenceMovingAverage()) %>%
-        summarize(Incidence = sum(Incidence)) %>%
-        mutate(Incidence = Incidence / IncidenceMovingAverage()) %>%
-        # MUST CONVERT INCIDENCE TO PERCENTAGE OF POPULATION HERE
-        mutate(Prevalence = Incidence * 12 / (1 - .6)) %>%
-        data.frame()
+        pin(URLIncidence) %>%                                                 # Read from the cached file
+        read_csv(na = "", col_types = list(col_date(format = "%Y-%m-%d"), col_factor(), col_factor(), col_factor(), col_integer(), col_integer(), col_integer(), col_integer())) %>% # Declare variable types from the data set
+        select("Date_reported", "Country", "New_cases") %>%                   # Select only the columns of interest
+        rename("Date" = "Date_reported", "Incidence" = "New_cases") %>%       # Rename the columns
+        remove_missing(vars = "Incidence") %>%                                # Remove any blanks (there should not be any, but this is to be safe)
+        group_by(Country) %>%                                                 # Group by country so we can select the latest cases by country
+        arrange(desc(Date)) %>%                                               # Sort by descending date order (should be the default in the data set, but this is to be safe)
+        slice(1:input$IncidenceMovingAverage) %>%                                 # Keep only the latest n rows for each country, based on how long the moving average is set to in the inputs panel
+        summarize(Incidence = sum(Incidence), .groups = "drop_last") %>%      # Do a cumulative sum of the new cases per day over the last n rows for each country, based on how long the moving average is set to in the inputs panel
+        mutate(Incidence = Incidence / input$IncidenceMovingAverage) %>%      # Convert the cumulative sum of the new cases to a single-day average, based on how long the moving average is set to in the inputs panel
+        inner_join(PopulationTable, by = "Country") %>%                       # Add a population column from the population table
+        mutate(Prevalence = Incidence / Population * input$InfectiousPeriod / input$NonSymptomaticRate * 100) # Apply the CAPSCPA formula to account for infectious period and non-symptomatic / unreported cases
+#        data.frame()                                                          # Load into a data frame for later display
     })
 
     # Import and wrangle the European Center for Disease Prevention and Control (E.U. CDC) epidemiological data, then calculate the disease prevalence by country per 100 people using the CAPSCA formula
@@ -448,35 +470,17 @@ server <- function(input, output) {
     # })
     
     OriginPrevalence <- reactive({
-        ifelse(input$OriginPrevalenceChoice == "Automatic (based on latest state data)", PrevalenceTable()[which(PrevalenceTable()$Country == input$OriginState), 3, drop = TRUE], input$OriginPrevalence / 100)
+        ifelse(input$OriginPrevalenceChoice == "Automatic (based on latest state data)", PrevalenceTable()[which(PrevalenceTable()$Country == input$OriginState), 4, drop = TRUE], input$OriginPrevalence / 100)
     })
     
     # Set destination prevalence to either that of the selected destination state or to that defined manually by the user
     DestinationPrevalence <- reactive({
-        ifelse(input$DestinationPrevalenceChoice == "Automatic (based on latest state data)", PrevalenceTable()[which(PrevalenceTable()$Country == input$DestinationState), 3, drop = TRUE], input$DestinationPrevalence / 100)
+        ifelse(input$DestinationPrevalenceChoice == "Automatic (based on latest state data)", PrevalenceTable()[which(PrevalenceTable()$Country == input$DestinationState), 4, drop = TRUE], input$DestinationPrevalence / 100)
     })
     
     # Set traffic to either that of the origin-destination pair for 2019 or to that defined manually by the user
     Traffic <- reactive({
         ifelse(input$PopulationCountChoice == "Automatic (based on 2019 O&D traffic for that pair)", max(TrafficTable[ which(TrafficTable$Origin == input$OriginState & TrafficTable$Destination == input$DestinationState), 3, drop = TRUE],0), input$PopulationCount)
-    })
-    
-    ###########################################################################
-    # 0. INPUTS PANEL                                                         #
-    ###########################################################################
-    
-    # Render the origin state selector in the inputs panel
-    output$OriginStateSelector <- renderUI({
-        tagList(
-            selectInput(inputId = "OriginState", label = "", choices = PrevalenceTable() %>% select(Country), selected = DefaultOriginState)
-        )
-    })
-
-    # Render the destination state selector in the inputs panel
-    output$DestinationStateSelector <- renderUI({
-        tagList(
-            selectInput(inputId = "DestinationState", label = "", choices = PrevalenceTable() %>% select(Country), selected = DefaultDestinationState)
-        )
     })
 
     ###########################################################################
@@ -595,8 +599,9 @@ server <- function(input, output) {
                 options = list(dom = "t", paging = FALSE)
             )
             %>%
-                formatCurrency(columns = c("Incidence", "Prevalence"), currency = "", digits = 0) %>%
-                formatStyle(columns = c("Country", "Incidence", "Prevalence"), color = "#1E32FA")
+                formatCurrency(columns = c("Incidence", "Population"), currency = "", digits = 0) %>%
+                formatPercentage(columns = "Prevalence", digits = 2) %>%
+                formatStyle(columns = c("Country", "Incidence", "Population", "Prevalence"), color = "#1E32FA")
         )
 
     ###########################################################################
