@@ -23,7 +23,7 @@ library(tidyverse)          # To wrangle the data
 # VARIABLE DECLARATION                                                        #
 ###############################################################################
 
-# Headers
+# Header labels
 AppHeader <- "Air travel COVID-19 testing simulator"
 LabelPanelInputHeader1 <- "Model inputs"
 LabelPanelOutputHeader1 <- "1. Pre-departure, pre-test outcomes"
@@ -31,7 +31,12 @@ LabelPanelOutputHeader2 <- "2. Pre-departure, post-test outcomes"
 LabelPanelOutputHeader3 <- "3. Post-arrival, pre-test outcomes"
 LabelPanelOutputHeader4 <- "4. Post-arrival, post-test outcomes"
 
+# Input selectors
+DefaultOriginState <- "Australia"
+DefaultDestinationState <- "China"
+
 # URLs
+URLIncidence <- "https://covid19.who.int/WHO-COVID-19-global-data.csv"
 URLPrevalence <- "https://opendata.ecdc.europa.eu/covid19/casedistribution/csv"
 URLTraffic <- "https://raw.githubusercontent.com/TheAviationDoctor/CoViD19Testing/main/data/traffic2019.csv"
 
@@ -71,7 +76,8 @@ ui <- fluidPage(
             ),
             conditionalPanel(
                 condition = "input.OriginPrevalenceChoice == 'Automatic (based on latest state data)'",
-                uiOutput("OriginStateSelector")
+                uiOutput("OriginStateSelector"),
+                sliderInput(inputId = "IncidenceMovingAverage", label = "Moving average of new cases (days)", min = 1, max = 30, step = 1, value = 14)
             ),
             
             # Destination characteristics
@@ -155,13 +161,13 @@ ui <- fluidPage(
             tabsetPanel(
                 
                 # Overview panel
-                tabPanel("1.1. Overview",
+                tabPanel("Overview",
                     br(),
                     p(align = "center", "This module assumes a COVID-19 prevalence at origin to determine the likelihood that any given individual who reports for outbound travel is infected. Click on Inputs for assumptions and Outputs for results."),
                 ),
 
-                # Inputs panel
-                tabPanel("1.2. Inputs",
+                # Assumptions panel
+                tabPanel("Assumptions",
                     br(),
                     fluidRow(
                         column(6, DT::dataTableOutput("PrevalenceAssumptionsTable")),
@@ -170,7 +176,7 @@ ui <- fluidPage(
                 ),
 
                 # Outputs panel
-                tabPanel("1.3. Outputs",
+                tabPanel("Outputs",
                     br(),
                 
                     # Table 1.3.1.
@@ -182,16 +188,21 @@ ui <- fluidPage(
                 ),
                 
                 # Chart panel
-                tabPanel("1.4. Charts",
+                tabPanel("Charts",
                     br(),
-                    plotOutput("PrevalenceChart")
+                    p(align = "center", "Point prevalence at origin and destination"),
+                    plotOutput("PrevalenceChart"),
+                    p(align = "center", "Historical prevalence at origin and destination"),
+                    plotOutput("HistoricalPrevalenceChart"),
+                    DT::dataTableOutput("HistoricalPrevalenceTable")
                 ),
                 
                 # Data panel
-                tabPanel("1.5. Data", withSpinner(DT::dataTableOutput("EUCDCTable"))),
+#                tabPanel("Data", withSpinner(DT::dataTableOutput("EUCDCTable"))),
+                tabPanel("Data", withSpinner(DT::dataTableOutput("PrevalenceTable"))),
                 
                 # Method panel
-                tabPanel("1.6. Method",
+                tabPanel("Method",
                     br(),
                     conditionalPanel(
                         condition = "input.OriginPrevalenceChoice == 'Manual (enter your own)'",
@@ -218,6 +229,12 @@ ui <- fluidPage(
                 tabPanel("Overview",
                     br(),
                     p(align = "center", "This module applies the pre-departure test design characteristics to calculate the likelihood of that a traveler tests positive or negative independently of everything else (table 2.1) and given an infection status (table 2.2), and that they are infected or not given a test result (table 2.3). Click on Inputs for assumptions and Outputs for results."),
+                ),
+                
+                # Assumptions panel
+                tabPanel("Assumptions",
+                         br(),
+                         p(align = "center", "Lorem ipsum dolor sit amet.")
                 ),
                 
                 # Outputs panel
@@ -260,8 +277,8 @@ ui <- fluidPage(
                     p(align = "center", "Lorem ipsum dolor sit amet.")
                 ),
                 
-                # Explanation panel
-                tabPanel("Explanation",
+                # Method panel
+                tabPanel("Method",
                      br(),
                      p(align = "center", "Lorem ipsum dolor sit amet.")
                 )
@@ -279,6 +296,12 @@ ui <- fluidPage(
                 tabPanel("Overview",
                     br(),
                     p(align = "center", "Lorem ipsum dolor sit amet."),
+                ),
+                
+                # Assumptions panel
+                tabPanel("Assumptions",
+                         br(),
+                         p(align = "center", "Lorem ipsum dolor sit amet.")
                 ),
                 
                 # Outputs panel
@@ -305,8 +328,8 @@ ui <- fluidPage(
                     p(align = "center", "Lorem ipsum dolor sit amet."),
                 ),
                 
-                # Explanation panel
-                tabPanel("Explanation",
+                # Method panel
+                tabPanel("Method",
                     br(),
                     p(align = "center", "Lorem ipsum dolor sit amet.")
                 )
@@ -325,6 +348,12 @@ ui <- fluidPage(
                 tabPanel("Overview",
                     br(),
                     p(align = "center", "Lorem ipsum dolor sit amet."),
+                ),
+                
+                # Assumptions panel
+                tabPanel("Assumptions",
+                         br(),
+                         p(align = "center", "Lorem ipsum dolor sit amet.")
                 ),
                 
                 # Outputs panel
@@ -351,8 +380,8 @@ ui <- fluidPage(
                     p(align = "center", "Lorem ipsum dolor sit amet."),
                 ),
                 
-                # Explanation panel
-                tabPanel("Explanation",
+                # Method panel
+                tabPanel("Method",
                     br(),
                     p(align = "center", "Lorem ipsum dolor sit amet.")
                 )
@@ -372,15 +401,38 @@ server <- function(input, output) {
     # IMPORT AND WRANGLE DATA                                                 #
     ###########################################################################
     
+    # Import and wrangle the WHO epidemiological data, then calculate the disease prevalence by country per 100 people using the CAPSCA formula
+    
+    # Set duration of moving average for cumulative incidence calculation
+    IncidenceMovingAverage <- reactive ({
+        input$IncidenceMovingAverage
+    })
+
+    PrevalenceTable <- reactive({
+        pin(URLIncidence) %>%
+        read_csv(na = "", col_types = list(col_date(format = "%Y-%m-%d"), col_factor(), col_factor(), col_factor(), col_integer(), col_integer(), col_integer(), col_integer())) %>%
+        select("Date_reported", "Country", "New_cases") %>%
+        rename("Date" = "Date_reported", "Incidence" = "New_cases") %>%
+        remove_missing(vars = "Incidence") %>%
+        group_by(Country) %>%
+        arrange(desc(Date)) %>%
+        slice(1:IncidenceMovingAverage()) %>%
+        summarize(Incidence = sum(Incidence)) %>%
+        mutate(Incidence = Incidence / IncidenceMovingAverage()) %>%
+        # MUST CONVERT INCIDENCE TO PERCENTAGE OF POPULATION HERE
+        mutate(Prevalence = Incidence * 12 / (1 - .6)) %>%
+        data.frame()
+    })
+
     # Import and wrangle the European Center for Disease Prevention and Control (E.U. CDC) epidemiological data, then calculate the disease prevalence by country per 100 people using the CAPSCA formula
     EUCDCTable <- pin(URLPrevalence) %>%
         read_csv(na = "", col_types = list(col_date(format = "%d/%m/%Y"), col_integer(), col_integer(), col_integer(), col_integer(), col_integer(), col_factor(), col_factor(), col_factor(), col_integer(), col_factor(), col_double())) %>%
         rename("Date" = "dateRep", "Day" = "day", "Month" = "month", "Year" = "year", "Cases" = "cases", "Deaths" = "deaths", "Country" = "countriesAndTerritories", "CountryTwoLetterCode" = "geoId", "CountryThreeLetterCode" = "countryterritoryCode", "Population" = "popData2019", "Continent" = "continentExp", "Incidence" = "Cumulative_number_for_14_days_of_COVID-19_cases_per_100000") %>%
         filter(Continent != "Other") %>%                                      # Filter out an odd entry in the list
+        remove_missing(vars = "Incidence") %>%                                # Remove rows with missing incidence
         mutate(Country = gsub("_", " ", Country)) %>%                         # Replace underscores with spaces in country names for nicer display
-        mutate(Incidence = Incidence / 14) %>%                                # Calculate a daily incidence (new cases per 100,000 people) from the last 14-day cumulative incidence
-        mutate(Prevalence = Incidence * 12 / (1 - .6) / 100000) %>%           # Apply the CAPSCPA formula to account for infectious period (mean 12 days) and non-symptomatic and unreported cases (40% of total cases), then convert to a percentage
-        group_by(Country) %>% filter(Date == max(Date))                       # Display only the latest row for each country
+        mutate(Incidence = Incidence / 14) %>%                                # EUCDC provides the incidence (new cases per 100,000 people) as a 14-day cumulative total, so we convert it back to a daily value (i.e. a 14-day moving average)
+        mutate(Prevalence = Incidence * 12 / (1 - .6) / 100000)               # Apply the CAPSCPA formula to account for infectious period (mean 12 days) and non-symptomatic and unreported cases (40% of total cases), then convert to a percentage
 
     # Import and wrangle the 2019 origin-destination passenger traffic
     TrafficTable <- pin(URLTraffic) %>%
@@ -389,15 +441,19 @@ server <- function(input, output) {
     ###########################################################################
     # VARIABLE DECLARATION                                                    #
     ###########################################################################
-    
+
     # Set origin prevalence to either that of the selected origin state or to that defined manually by the user
+    # OriginPrevalence <- reactive({
+    #     ifelse(input$OriginPrevalenceChoice == "Automatic (based on latest state data)", EUCDCTable[ which(EUCDCTable$Country == input$OriginState), 13, drop = TRUE], input$OriginPrevalence / 100)
+    # })
+    
     OriginPrevalence <- reactive({
-        ifelse(input$OriginPrevalenceChoice == "Automatic (based on latest state data)", EUCDCTable[ which(EUCDCTable$Country == input$OriginState), 13, drop = TRUE], input$OriginPrevalence / 100)
+        ifelse(input$OriginPrevalenceChoice == "Automatic (based on latest state data)", PrevalenceTable()[which(PrevalenceTable()$Country == input$OriginState), 3, drop = TRUE], input$OriginPrevalence / 100)
     })
     
     # Set destination prevalence to either that of the selected destination state or to that defined manually by the user
     DestinationPrevalence <- reactive({
-        ifelse(input$DestinationPrevalenceChoice == "Automatic (based on latest state data)", EUCDCTable[ which(EUCDCTable$Country == input$DestinationState), 13, drop = TRUE], input$DestinationPrevalence / 100)
+        ifelse(input$DestinationPrevalenceChoice == "Automatic (based on latest state data)", PrevalenceTable()[which(PrevalenceTable()$Country == input$DestinationState), 3, drop = TRUE], input$DestinationPrevalence / 100)
     })
     
     # Set traffic to either that of the origin-destination pair for 2019 or to that defined manually by the user
@@ -412,14 +468,14 @@ server <- function(input, output) {
     # Render the origin state selector in the inputs panel
     output$OriginStateSelector <- renderUI({
         tagList(
-            selectInput(inputId = "OriginState", label = "", choices = EUCDCTable %>% select(Country), selected = "Australia")
+            selectInput(inputId = "OriginState", label = "", choices = PrevalenceTable() %>% select(Country), selected = DefaultOriginState)
         )
     })
 
-    # Render the destination state selector in the inputs panel (same as origin, except that we exclude the selected origin country since we only model international traffic and not domestic)
+    # Render the destination state selector in the inputs panel
     output$DestinationStateSelector <- renderUI({
         tagList(
-            selectInput(inputId = "DestinationState", label = "", choices = EUCDCTable[which(EUCDCTable$Country != input$OriginState), 7], selected = "China")
+            selectInput(inputId = "DestinationState", label = "", choices = PrevalenceTable() %>% select(Country), selected = DefaultDestinationState)
         )
     })
 
@@ -497,9 +553,19 @@ server <- function(input, output) {
             geom_bar(stat="identity") +
             theme_classic() +
             theme(axis.title.x=element_blank()) +
-            scale_y_continuous(labels = scales::percent) +
-            ggtitle(label = "Disease prevalence at origin and destination") +
-            theme(plot.title = element_text(hjust = 0.5))
+            scale_y_continuous(labels = scales::percent)
+        })
+        
+        # Render a line plot to display the historical disease prevalence at origin and destination
+        output$HistoricalPrevalenceTable <- DT::renderDataTable(EUCDCTable %>% filter(Country == "France" | Country == "Italy") %>% select(Date, Country, Prevalence) %>% group_by(Date) %>% pivot_wider(names_from = Country, values_from = Prevalence))
+        output$HistoricalPrevalenceChart <- renderPlot({
+            ggplot(
+                data = EUCDCTable %>% filter(Country == "France" | Country == "Italy") %>% select(Date, Country, Prevalence) %>% pivot_wider(names_from = Country, values_from = Prevalence),
+                aes(x = Date)
+            ) +
+            geom_line(aes(y = France), color = "red") +
+            geom_line(aes(y = Italy), color = "blue") +
+            theme_classic()
         })
         
         #######################################################################
@@ -510,6 +576,7 @@ server <- function(input, output) {
         output$EUCDCTable <- DT::renderDataTable(
             datatable(
                 EUCDCTable %>%
+                    group_by(Country) %>% filter(Date == max(Date)) %>%                    # Display only the latest row for each country
                     select(c("Date","Country", "Population", "Incidence", "Prevalence")),
                 rownames = NULL,
                 options = list(dom = "t", paging = FALSE)
@@ -517,7 +584,19 @@ server <- function(input, output) {
                 formatCurrency(columns = c("Population"), currency = "", digits = 0) %>%
                 formatCurrency(columns = "Incidence", currency = "", digits = 2) %>%
                 formatPercentage(columns = "Prevalence", digits = 2) %>%
-                formatStyle(columns = c("Date","Country", "Population", "Incidence", "Prevalence"),  color = "#1E32FA")
+                formatStyle(columns = c("Date", "Country", "Population", "Incidence", "Prevalence"), color = "#1E32FA")
+        )
+        
+        # Render the prevalence by country from the WHO incidence data for display in the Data panel
+        output$PrevalenceTable <- DT::renderDataTable(
+            datatable(
+                PrevalenceTable(),
+                rownames = NULL,
+                options = list(dom = "t", paging = FALSE)
+            )
+            %>%
+                formatCurrency(columns = c("Incidence", "Prevalence"), currency = "", digits = 0) %>%
+                formatStyle(columns = c("Country", "Incidence", "Prevalence"), color = "#1E32FA")
         )
 
     ###########################################################################
