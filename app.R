@@ -443,7 +443,7 @@ server <- function(input, output) {
             select(Date, Country, Population, Incidence, PointPrevalence) %>%   # Select only the columns of interest
             group_by(Country) %>%                                               # Needed to calculate the moving average
             arrange(Country, Date) %>%                                          # Needed to calculate the moving average
-            mutate(MovingAveragePrevalence = rollsum(x = PointPrevalence, input$IncidenceMovingAverage, align = "right", fill = NA) / input$IncidenceMovingAverage) %>% # Calculate the moving average of the average
+            mutate(MovingAveragePrevalence = rollmean(x = PointPrevalence, input$IncidenceMovingAverage, align = "right", fill = NA)) %>% # Calculate the moving average of the average
             arrange(Country, desc(Date))%>%                                     # Final sort by latest date first
             remove_missing(vars = "RollingPrevalence")                          # Remove rows beyond the range of the moving average calculation window
     })
