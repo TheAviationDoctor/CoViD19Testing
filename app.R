@@ -28,13 +28,13 @@ library(zoo)                # To perform rolling means
 AppHeader               <- "Air travel COVID-19 testing simulator"
 LabelInputPanel1        <- "Model inputs"
 LabelOutputHeader1      <- "1. Pre-departure, pre-test outcomes"
-LabelOutputHeader2 <- "2. Pre-departure, post-test outcomes"
-LabelOutputHeader3 <- "3. Post-arrival, pre-test outcomes"
-LabelOutputHeader4 <- "4. Post-arrival, post-test outcomes"
+LabelOutputHeader2      <- "2. Pre-departure, post-test outcomes"
+LabelOutputHeader3      <- "3. Post-arrival, pre-test outcomes"
+LabelOutputHeader4      <- "4. Post-arrival, post-test outcomes"
 
 #Overview content
 LabelOutputOverview1    <- "This module assumes a COVID-19 prevalence at origin to determine the likelihood that any given individual who reports for outbound travel is infected. Click on the tabs above for assumptions and results."
-LabelOutputOverview2    <- ""
+LabelOutputOverview2    <- "This module applies the pre-departure test design characteristics to calculate the likelihood of that a traveler tests positive or negative independently of everything else (table 2.1) and given an infection status (table 2.2), and that they are infected or not given a test result (table 2.3). Click on the tabs above for assumptions and results."
 LabelOutputOverview3    <- ""
 LabelOutputOverview4    <- ""
 
@@ -183,7 +183,7 @@ ui <- fluidPage(
                 # Overview panel
                 tabPanel("Overview",
                     br(),
-                    p(align = "center", LabelOutputOverview1),
+                    p(align = "center", LabelOutputOverview1)
                 ),
 
                 # Assumptions panel
@@ -253,7 +253,7 @@ ui <- fluidPage(
                 # Overview panel
                 tabPanel("Overview",
                     br(),
-                    p(align = "center", "This module applies the pre-departure test design characteristics to calculate the likelihood of that a traveler tests positive or negative independently of everything else (table 2.1) and given an infection status (table 2.2), and that they are infected or not given a test result (table 2.3). Click on Inputs for assumptions and Outputs for results."),
+                    p(align = "center", LabelOutputOverview2)
                 ),
                 
                 # Assumptions panel
@@ -267,7 +267,7 @@ ui <- fluidPage(
                     br(),
                     
                     # Table 2.1
-                    p(align = "center", "2.1. Probability that a departing air traveler tests positive/negative"),
+                    em(align = "center", textOutput("PreDepartureTestTitle")),
                     fluidRow(
                         column(6, withSpinner(DT::dataTableOutput("PreDepartureTestPercentageTable"))),
                         column(6, withSpinner(DT::dataTableOutput("PreDepartureTestHeadcountTable")))
@@ -275,15 +275,15 @@ ui <- fluidPage(
                     br(),
                     
                     # Table 2.2
-                    p(align = "center", "2.2. Probability that a departing air traveler tests positive/negative, given that they are infected/uninfected."),
+                    em(align = "center", textOutput("PreDepartureTestGivenInfectionTitle")),
                     fluidRow(
-                        column(6, withSpinner(DT::dataTableOutput("PreDepartureTestPriorPercentageTable"))),
-                        column(6, withSpinner(DT::dataTableOutput("PreDepartureTestPriorHeadcountTable")))
+                        column(6, withSpinner(DT::dataTableOutput("PreDepartureTestGivenInfectionPercentageTable"))),
+                        column(6, withSpinner(DT::dataTableOutput("PreDepartureTestGivenInfectionHeadcountTable")))
                     ),
                     br(),
                     
                     # Table 2.3
-                    p(align = "center", "2.3. Probability that a departing air traveler is infected/uninfected, given that they test positive/negative."),
+                    em(align = "center", "2.3. Probability that a departing air traveler is infected/uninfected, given that they test positive/negative"),
                     fluidRow(
                         column(6, withSpinner(DT::dataTableOutput("PreDepartureTestPosteriorPercentageTable"))),
                         column(6, withSpinner(DT::dataTableOutput("PreDepartureTestPosteriorHeadcountTable")))
@@ -458,20 +458,26 @@ server <- function(input, output) {
     ###########################################################################
 
     # Set origin prevalence to either that of the selected origin state or to that defined manually by the user
-    OriginPrevalence <- reactive({
-        ifelse(input$OriginPrevalenceChoice == "Automatic (based on latest state data)", IncidenceTable()[which(IncidenceTable()$Country == input$OriginState), 6, drop = TRUE], input$OriginPrevalence / 100)
-    })
+    OriginPrevalence <- reactive({ ifelse(input$OriginPrevalenceChoice == "Automatic (based on latest state data)", IncidenceTable()[which(IncidenceTable()$Country == input$OriginState), 6, drop = TRUE], input$OriginPrevalence / 100) })
     
     # Set destination prevalence to either that of the selected destination state or to that defined manually by the user
-    DestinationPrevalence <- reactive({
-        ifelse(input$DestinationPrevalenceChoice == "Automatic (based on latest state data)", IncidenceTable()[which(IncidenceTable()$Country == input$DestinationState), 6, drop = TRUE], input$DestinationPrevalence / 100)
-    })
+    DestinationPrevalence <- reactive({ ifelse(input$DestinationPrevalenceChoice == "Automatic (based on latest state data)", IncidenceTable()[which(IncidenceTable()$Country == input$DestinationState), 6, drop = TRUE], input$DestinationPrevalence / 100) })
     
     # Set traffic to either that of the origin-destination pair for 2019 or to that defined manually by the user
-    Traffic <- reactive({
-        ifelse(input$PopulationCountChoice == "Automatic (based on 2019 O&D traffic for that pair)", max(TrafficTable[ which(TrafficTable$Origin == input$OriginState & TrafficTable$Destination == input$DestinationState), 3, drop = TRUE],0), input$PopulationCount)
-    })
+    PreDepartureCount <- reactive({ ifelse(input$PopulationCountChoice == "Automatic (based on 2019 O&D traffic for that pair)", max(TrafficTable[ which(TrafficTable$Origin == input$OriginState & TrafficTable$Destination == input$DestinationState), 3, drop = TRUE],0), input$PopulationCount) })
 
+    # Pre-departure prevalence
+    PreDeparturePositivePercentage <- reactive({ input$DepartureTestSensitivity * OriginPrevalence() + (1 - input$DepartureTestSpecificity) * (1 - OriginPrevalence()) })
+    PreDepartureNegativePercentage <- reactive({ (1 - input$DepartureTestSensitivity) * OriginPrevalence() + input$DepartureTestSpecificity * (1 - OriginPrevalence()) })
+    PreDeparturePositiveCount <- reactive({ PreDeparturePositivePercentage() * PreDepartureCount() })
+    PreDepartureNegativeCount <- reactive({ PreDepartureNegativePercentage() * PreDepartureCount() })
+    
+    # Pre-departure test results given infection    
+    PreDeparturePositiveGivenInfected <- reactive({ input$DepartureTestSensitivity })
+    PreDeparturePositiveGivenUninfected <- reactive({ 1 - input$DepartureTestSpecificity })
+    PreDepartureNegativeGivenInfected <- reactive({ 1 - input$DepartureTestSensitivity })
+    PreDepartureNegativeGivenUninfected <- reactive({ input$DepartureTestSpecificity })
+    
     ###########################################################################
     # 1. PRE-DEPARTURE PRE-TEST OUTCOMES                                      #
     ###########################################################################
@@ -497,7 +503,7 @@ server <- function(input, output) {
             datatable(
                 data.frame(
                     "Assumption" = "Passenger headcount",
-                    "Value" = Traffic()
+                    "Value" = PreDepartureCount()
                 ), rownames = NULL, options = list(dom = "t", ordering = F)
             ) %>% formatCurrency(columns = "Value", currency = "", digits = 0) %>% formatStyle(columns = "Value",  color = "#1E32FA")
         )
@@ -511,20 +517,22 @@ server <- function(input, output) {
         output$PreDeparturePrevalencePercentageTable <- DT::renderDataTable(
             datatable(
                 data.frame(
-                    "Likelihood" = "In percentage",
+                    "Likelihood" = "Percent",
                     "Infected" = OriginPrevalence(),
                     "Uninfected" = 1 - OriginPrevalence()
                 ), rownames = NULL, options = list(dom = "t", ordering = F)
-            ) %>% formatPercentage(columns = c("Infected", "Uninfected"), digits = 1) %>% formatStyle(columns = c("Infected", "Uninfected"),  color = "#1E32FA")
+            ) %>%
+                formatPercentage(columns = c("Infected", "Uninfected"), digits = 1) %>%
+                formatStyle(columns = c("Infected", "Uninfected"),  color = "#1E32FA")
         )
     
         # 1.3.1. Render the probability (in headcount) that a departing air traveler is infected
         output$PreDeparturePrevalenceHeadcountTable <- DT::renderDataTable(
             datatable(
                 data.frame(
-                    "Likelihood" = "In headcount",
-                    "Infected" = OriginPrevalence() * Traffic(),
-                    "Uninfected" = (1 - OriginPrevalence()) * Traffic()
+                    "Likelihood" = "Count",
+                    "Infected" = OriginPrevalence() * PreDepartureCount(),
+                    "Uninfected" = (1 - OriginPrevalence()) * PreDepartureCount()
                 ), rownames = NULL, options = list(dom = "t", ordering = F)
             ) %>%
                 formatCurrency(columns = c("Infected", "Uninfected"), currency = "", digits = 0) %>%
@@ -595,60 +603,56 @@ server <- function(input, output) {
     # 2. PRE-DEPARTURE POST-TEST OUTCOMES                                     #
     ###########################################################################
     
-    # 2.1a Build a data frame to store the probability that a test is positive or negative (percentage)
-    PreDepartureTestPercentageTable <- reactive({
-        PreDepartureTestPercentageLabels = "Percentage"
-        PreDepartureTestPercentagePositiveValues = input$DepartureTestSensitivity * OriginPrevalence() + (1 - input$DepartureTestSpecificity) * (1 - OriginPrevalence())
-        PreDepartureTestPercentageNegativeValues = (1 - input$DepartureTestSensitivity) * OriginPrevalence() + input$DepartureTestSpecificity * (1 - OriginPrevalence())
-        PreDepartureTestPercentageTotal = PreDepartureTestPercentagePositiveValues + PreDepartureTestPercentageNegativeValues
-        datatable(data.frame(Test = PreDepartureTestPercentageLabels, Positive = PreDepartureTestPercentagePositiveValues, Negative = PreDepartureTestPercentageNegativeValues, Total = PreDepartureTestPercentageTotal), rownames = NULL, options = list(dom = "t")) %>% formatPercentage(columns = c("Positive", "Negative","Total"), digits = 1) %>% formatStyle(columns = c("Positive", "Negative", "Total"),  color = "#1E32FA")
-    })
-    
-    # 2.1b Render a table to display the probability that a test is positive or negative (percentage)
+    # 2.1. Render a table to display the probability that a test is positive or negative
+    output$PreDepartureTestTitle <- renderText("Probability that a departing air traveler tests positive/negative")
     output$PreDepartureTestPercentageTable <- DT::renderDataTable(
-        PreDepartureTestPercentageTable()
+        datatable(
+            data.frame(
+                "Result" = "Percent",
+                "Positive" = PreDeparturePositivePercentage(),
+                "Negative" = PreDepartureNegativePercentage()
+            ), rownames = NULL, options = list(dom = "t", ordering = F)
+        ) %>%
+            formatPercentage(columns = c("Positive", "Negative"), digits = 1) %>%
+            formatStyle(columns = c("Positive", "Negative"),  color = "#1E32FA")
     )
-    
-    # 2.1c Build a data frame to store the probability that a test is positive or negative (headcount)
-    PreDepartureTestHeadcountTable <- reactive({
-        PreDepartureTestHeadcountLabels = "Headcount"
-        PreDepartureTestHeadcountPositiveValues = (input$DepartureTestSensitivity * OriginPrevalence() + (1 - input$DepartureTestSpecificity) * (1 - OriginPrevalence())) * input$PopulationCount
-        PreDepartureTestHeadcountNegativeValues = ((1 - input$DepartureTestSensitivity) * OriginPrevalence() + input$DepartureTestSpecificity * (1 - OriginPrevalence())) * input$PopulationCount
-        PreDepartureTestHeadcountTotal = PreDepartureTestHeadcountPositiveValues + PreDepartureTestHeadcountNegativeValues
-        datatable(data.frame(Test = PreDepartureTestHeadcountLabels, Positive = PreDepartureTestHeadcountPositiveValues, Negative = PreDepartureTestHeadcountNegativeValues, Total = PreDepartureTestHeadcountTotal), rownames = NULL, options = list(dom = "t")) %>% formatCurrency(columns = c("Positive", "Negative", "Total"), currency = "", digits = 0) %>% formatStyle(columns = c("Positive", "Negative", "Total"),  color = "#1E32FA")
-    })
-    
-    # 2.1d Render a table to display the probability that a test is positive or negative (headcount)
     output$PreDepartureTestHeadcountTable <- DT::renderDataTable(
-        PreDepartureTestHeadcountTable()
+        datatable(
+            data.frame(
+                "Result" = "Count",
+                "Positive" = PreDeparturePositiveCount(),
+                "Negative" = PreDepartureNegativeCount()
+            ), rownames = NULL, options = list(dom = "t", ordering = F)
+        ) %>%
+            formatCurrency(columns = c("Positive", "Negative"), currency = "", digits = 0) %>%
+            formatStyle(columns = c("Positive", "Negative"),  color = "#1E32FA")
     )
-    
-    # 2.2a Build a data frame to store the pre-departure test prior probabilities (percentage)
-    PreDepartureTestPriorPercentage <- reactive({
-        PreDepartureTestPriorPercentageTestLabels = c("Positive", "Negative", "Total")
-        PreDepartureTestPriorPercentageInfectedValues = c(input$DepartureTestSensitivity, 1 - input$DepartureTestSensitivity, input$DepartureTestSensitivity + 1 - input$DepartureTestSensitivity)
-        PreDepartureTestPriorPercentageUninfectedValues = c(1 - input$DepartureTestSpecificity, input$DepartureTestSpecificity, input$DepartureTestSpecificity + 1 - input$DepartureTestSpecificity)
-        datatable(data.frame(Test = PreDepartureTestPriorPercentageTestLabels, Infected = PreDepartureTestPriorPercentageInfectedValues,  Uninfected = PreDepartureTestPriorPercentageUninfectedValues), rownames = NULL, options = list(dom = "t")) %>% formatPercentage(columns = c("Infected", "Uninfected"), digits = 1) %>% formatStyle(columns = c("Infected", "Uninfected"),  color = "#1E32FA")
-    })
-    
-    # 2.2b Render a table to display the pre-departure test prior probabilities (percentage)
-    output$PreDepartureTestPriorPercentageTable <- DT::renderDataTable(
-        PreDepartureTestPriorPercentage()
+
+    # 2.2. Render a table to display the pre-departure test prior probabilities
+    output$PreDepartureTestGivenInfectionTitle <- renderText("Probability that a departing air traveler tests positive/negative, given that they are infected/uninfected")
+    output$PreDepartureTestGivenInfectionPercentageTable <- DT::renderDataTable(
+        datatable(
+            data.frame(
+                "Test" = c("Positive", "Negative", "Total"),
+                "Infected" = c(PreDeparturePositiveGivenInfected(), PreDepartureNegativeGivenInfected(), PreDeparturePositiveGivenInfected() + PreDepartureNegativeGivenInfected()),
+                "Uninfected" = c(PreDeparturePositiveGivenUninfected(), PreDepartureNegativeGivenUninfected(), PreDeparturePositiveGivenUninfected() + PreDepartureNegativeGivenUninfected())
+            ), rownames = NULL, options = list(dom = "t", ordering = F)
+        ) %>%
+            formatPercentage(columns = c("Infected", "Uninfected"), digits = 1) %>%
+            formatStyle(columns = c("Infected", "Uninfected"),  color = "#1E32FA")
     )
-    
-    # 2.2c Build a data frame to store the pre-departure test probabilities (headcount)
-    PreDepartureTestPriorHeadcount <- reactive({
-        PreDepartureTestPriorHeadcountTestLabels = c("Positive", "Negative", "Total")
-        PreDepartureTestPriorHeadcountInfectedValues = c(input$DepartureTestSensitivity * input$PopulationCount * OriginPrevalence(), (1 - input$DepartureTestSensitivity) * input$PopulationCount * OriginPrevalence(), input$DepartureTestSensitivity * input$PopulationCount * OriginPrevalence() + (1 - input$DepartureTestSensitivity) * input$PopulationCount * OriginPrevalence())
-        PreDepartureTestPriorHeadcountUninfectedValues = c((1 - input$DepartureTestSpecificity) * input$PopulationCount * (1 - OriginPrevalence()), input$DepartureTestSpecificity * input$PopulationCount * (1 - OriginPrevalence()), (1 - input$DepartureTestSpecificity) * input$PopulationCount * (1 - OriginPrevalence()) + input$DepartureTestSpecificity * input$PopulationCount * (1 - OriginPrevalence()))
-        datatable(data.frame(Test = PreDepartureTestPriorHeadcountTestLabels, Infected = PreDepartureTestPriorHeadcountInfectedValues,  Uninfected = PreDepartureTestPriorHeadcountUninfectedValues), rownames = NULL, options = list(dom = "t")) %>% formatCurrency(columns = c("Infected", "Uninfected"), currency = "", digits = 0) %>% formatStyle(columns = c("Infected", "Uninfected"),  color = "#1E32FA")
-    })
-    
-    # 2.2d Render a table to display the pre-departure test prior probabilities (headcount)
-    output$PreDepartureTestPriorHeadcountTable <- DT::renderDataTable(
-        PreDepartureTestPriorHeadcount()
+    output$PreDepartureTestGivenInfectionHeadcountTable <- DT::renderDataTable(
+        datatable(
+            data.frame(
+                "Test" = c("Positive", "Negative", "Total"),
+                "Infected" = c(PreDeparturePositiveGivenInfected() * PreDeparturePositiveCount(), PreDepartureNegativeGivenUninfected() * PreDepartureNegativeCount(), PreDeparturePositiveGivenInfected() * PreDeparturePositiveCount() + PreDepartureNegativeGivenUninfected() * PreDepartureNegativeCount()),
+                "Uninfected" = c(PreDeparturePositiveGivenUninfected() * PreDeparturePositiveCount(), PreDepartureNegativeGivenInfected() * PreDepartureNegativeCount(), PreDeparturePositiveGivenUninfected() * PreDeparturePositiveCount() + PreDepartureNegativeGivenInfected() * PreDepartureNegativeCount())
+            ), rownames = NULL, options = list(dom = "t", ordering = F)
+        ) %>%
+            formatCurrency(columns = c("Infected", "Uninfected"), currency = "", digits = 0) %>%
+            formatStyle(columns = c("Infected", "Uninfected"),  color = "#1E32FA")
     )
-    
+
     # 2.3a Build a data frame to store the pre-departure test posterior probabilities (percentage)
     PreDepartureTestPosteriorPercentage <- reactive({
         PreDepartureTestPosteriorPercentageLabels = c("Infected", "Uninfected", "Total")
