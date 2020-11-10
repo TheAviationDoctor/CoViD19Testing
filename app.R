@@ -26,11 +26,17 @@ library(zoo)                # To perform rolling means
 
 # Header labels
 AppHeader               <- "Air travel COVID-19 testing simulator"
-LabelPanelInputHeader1  <- "Model inputs"
-LabelPanelOutputHeader1 <- "1. Pre-departure, pre-test outcomes"
-LabelPanelOutputHeader2 <- "2. Pre-departure, post-test outcomes"
-LabelPanelOutputHeader3 <- "3. Post-arrival, pre-test outcomes"
-LabelPanelOutputHeader4 <- "4. Post-arrival, post-test outcomes"
+LabelInputPanel1        <- "Model inputs"
+LabelOutputHeader1      <- "1. Pre-departure, pre-test outcomes"
+LabelOutputHeader2 <- "2. Pre-departure, post-test outcomes"
+LabelOutputHeader3 <- "3. Post-arrival, pre-test outcomes"
+LabelOutputHeader4 <- "4. Post-arrival, post-test outcomes"
+
+#Overview content
+LabelOutputOverview1    <- "This module assumes a COVID-19 prevalence at origin to determine the likelihood that any given individual who reports for outbound travel is infected. Click on the tabs above for assumptions and results."
+LabelOutputOverview2    <- ""
+LabelOutputOverview3    <- ""
+LabelOutputOverview4    <- ""
 
 # Input selectors
 States                  <- list("Afghanistan", "Albania", "Algeria", "American Samoa", "Andorra", "Angola", "Anguilla", "Antigua and Barbuda", "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bermuda", "Bhutan", "Bolivia (Plurinational State of)", "Bonaire, Sint Eustatius and Saba", "Bosnia and Herzegovina", "Botswana", "Brazil", "British Virgin Islands", "Brunei Darussalam", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Cayman Islands", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Cook Islands", "Costa Rica", "Côte d’Ivoire", "Croatia", "Cuba", "Curaçao", "Cyprus", "Czechia", "Democratic People's Republic of Korea", "Democratic Republic of the Congo", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Falkland Islands (Malvinas)", "Faroe Islands", "Fiji", "Finland", "France", "French Guiana", "French Polynesia", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Gibraltar", "Greece", "Greenland", "Grenada", "Guadeloupe", "Guam", "Guatemala", "Guernsey", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Holy See", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran (Islamic Republic of)", "Iraq", "Ireland", "Isle of Man", "Israel", "Italy", "Jamaica", "Japan", "Jersey", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kosovo", "Kuwait", "Kyrgyzstan", "Lao People's Democratic Republic", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Martinique", "Mauritania", "Mauritius", "Mayotte", "Mexico", "Micronesia (Federated States of)", "Monaco", "Mongolia", "Montenegro", "Montserrat", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Caledonia", "New Zealand", "Nicaragua", "Niger", "Nigeria", "Niue", "North Macedonia", "Northern Mariana Islands (Commonwealth of the)", "Norway", "Occupied Palestinian territory, incl. east Jerusalem", "Oman", "Pakistan", "Palau", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Pitcairn Islands", "Poland", "Portugal", "Puerto Rico", "Qatar", "Republic of Korea", "Republic of Moldova", "Réunion", "Romania", "Russian Federation", "Rwanda", "Saint Barthélemy", "Saint Helena", "Saint Kitts and Nevis", "Saint Lucia", "Saint Martin", "Saint Pierre and Miquelon", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Sint Maarten", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syrian Arab Republic", "Tajikistan", "Thailand", "The United Kingdom", "Timor-Leste", "Togo", "Tokelau", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Turks and Caicos Islands", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Republic of Tanzania", "United States of America", "United States Virgin Islands", "Uruguay", "Uzbekistan", "Vanuatu", "Venezuela (Bolivarian Republic of)", "Viet Nam", "Wallis and Futuna", "Yemen", "Zambia", "Zimbabwe")
@@ -67,7 +73,7 @@ ui <- fluidPage(
         sidebarPanel(
 
             #Title
-            h3(LabelPanelInputHeader1),
+            h3(LabelInputPanel1),
 
             # Origin characteristics
             hr(),
@@ -110,7 +116,7 @@ ui <- fluidPage(
             radioButtons(inputId = "PopulationCountChoice", label = "Passenger traffic from origin to destination", choices = list("Manual (enter your own)", "Automatic (based on 2019 O&D traffic for that pair)")),
             conditionalPanel(
                 condition = "input.PopulationCountChoice == 'Manual (enter your own)'",
-                sliderInput(inputId = "PopulationCount", label = "", min=0, max=4.5*10^9, value=2.2*10^9)
+                sliderInput(inputId = "PopulationCount", label = "", min=0, max=4.5*10^9, value=2.5875*10^9) # AdJ spoke about 2021 seeing 55-60% of 2019 traffic, so we use 57.5% here
             ),
 
             # Pre-departure test characteristics
@@ -168,19 +174,22 @@ ui <- fluidPage(
             ###################################################################
             # 1. PRE-DEPARTURE PRE-TEST OUTCOMES                              #
             ###################################################################
+
+            DT::dataTableOutput("PrevalenceChartTable"),
             
-            h3(LabelPanelOutputHeader1),
+            h3(LabelOutputHeader1),
             tabsetPanel(
                 
                 # Overview panel
                 tabPanel("Overview",
                     br(),
-                    p(align = "center", "This module assumes a COVID-19 prevalence at origin to determine the likelihood that any given individual who reports for outbound travel is infected. Click on Inputs for assumptions and Outputs for results."),
+                    p(align = "center", LabelOutputOverview1),
                 ),
 
                 # Assumptions panel
                 tabPanel("Assumptions",
                     br(),
+                    em(align = "center", textOutput("PrevalenceAssumptionsTitle")),
                     fluidRow(
                         column(6, DT::dataTableOutput("PrevalenceAssumptionsTable")),
                         column(6, DT::dataTableOutput("TrafficAssumptionsTable"))
@@ -190,9 +199,7 @@ ui <- fluidPage(
                 # Outputs panel
                 tabPanel("Outputs",
                     br(),
-                
-                    # Table 1.3.1.
-                    strong(align = "center", "Probability that a departing air traveler is infected, based on the disease prevalence at origin"),
+                    em(align = "center", textOutput("PreDeparturePrevalenceTitle")),
                     fluidRow(
                         column(6, withSpinner(DT::dataTableOutput("PreDeparturePrevalencePercentageTable"))),
                         column(6, withSpinner(DT::dataTableOutput("PreDeparturePrevalenceHeadcountTable")))
@@ -202,22 +209,14 @@ ui <- fluidPage(
                 # Chart panel
                 tabPanel("Charts",
                     br(),
-                    strong(align = "center", "Point prevalence at origin and destination"),
-                    plotOutput("PrevalenceChart"),
-                    strong(align = "center", "Historical prevalence at origin and destination"),
-                    plotOutput("HistoricalPrevalenceChart")
+                    em(align = "center", textOutput("PrevalenceChartTitle")),
+                    withSpinner(plotOutput("HistoricalPrevalenceChart"))
                 ),
                 
                 # Data panel
                 tabPanel("Data",
-                    conditionalPanel(
-                        condition = "input.OriginPrevalenceChoice == 'Automatic (based on latest state data)' | input.DestinationPrevalenceChoice == 'Automatic (based on latest state data)'",
-                        br(),
-                        strong(align = "center", textOutput("IncidenceTableOriginDestinationTitle")),
-                        withSpinner(DT::dataTableOutput("IncidenceTableOriginDestination")),
-                    ),
                     br(),
-                    strong(align = "center", textOutput("IncidenceTableTitle")),
+                    em(align = "center", textOutput("IncidenceTableTitle")),
                     withSpinner(DT::dataTableOutput("IncidenceTable"))
                 ),
 
@@ -225,12 +224,18 @@ ui <- fluidPage(
                 tabPanel("Method",
                     br(),
                     conditionalPanel(
-                        condition = "input.OriginPrevalenceChoice == 'Manual (enter your own)'",
+                        condition = "input.OriginPrevalenceChoice == 'Automatic (based on latest state data)'",
                         tags$ol(
                             tags$li("We assume that the proportion of infected outbound air travelers is identical to that of the general population in the country of origin (the so-called point prevalence of the disease)."),
                             tags$li("The point prevalence is unknown but we can estimate it from the 14-day cumulative count of daily new cases published daily by the European CDC (the so-called incidence of the disease)."),
                             tags$li("We convert that incidence to a daily average and then apply the CAPSCPA formula to account for infectious period (mean 12 days) and non-symptomatic and unreported cases (40% of total cases)."), 
-                            tags$li("With the point prevalence now available as a percentage for every country, we can compare the prevalence at origin and destination, and, therefore, the risk of disease importation before testing."), 
+                            tags$li("With the point prevalence now available as a percentage for every country, we can compare the prevalence at origin and destination, and, therefore, the risk of disease importation before testing.")
+                        )
+                    ),
+                    conditionalPanel(
+                        condition = "input.OriginPrevalenceChoice == 'Manual (enter your own)'",
+                        tags$ol(
+                            tags$li("The model applies the disease prevalence at origin to the passenger traffic from origin to destination to calculate the likelihood that a departing traveler is infected.") 
                         )
                     ),
                 )
@@ -242,7 +247,7 @@ ui <- fluidPage(
             # 2. PRE-DEPARTURE POST-TEST OUTCOMES                             #
             ###################################################################
 
-            h3(LabelPanelOutputHeader2),
+            h3(LabelOutputHeader2),
             tabsetPanel(
                 
                 # Overview panel
@@ -309,7 +314,7 @@ ui <- fluidPage(
             # 3. POST-ARRIVAL PRE-TEST OUTCOMES                               #
             ###################################################################
 
-            h3(LabelPanelOutputHeader3),
+            h3(LabelOutputHeader3),
             tabsetPanel(
                 
                 # Overview panel
@@ -361,7 +366,7 @@ ui <- fluidPage(
             # 4. POST-ARRIVAL POST-TEST OUTCOMES                              #
             ###################################################################
 
-            h3(LabelPanelOutputHeader4),
+            h3(LabelOutputHeader4),
             tabsetPanel(
             
                 # Overview panel
@@ -472,10 +477,11 @@ server <- function(input, output) {
     ###########################################################################
     
         #######################################################################
-        # 1.2. INPUTS PANEL                                                   #
+        # 1.2. ASSUMPTIONS PANEL                                              #
         #######################################################################
 
-        # 1.2.1. Render the active prevalence assumptions in the Inputs panel
+        # 1.2.1. Render the active prevalence assumptions in the Assumptions panel
+        output$PrevalenceAssumptionsTitle <- renderText("Disease prevalence at origin and destination (left), and passenger traffic (right)")
         output$PrevalenceAssumptionsTable <- DT::renderDataTable(
             datatable(
                 data.frame(
@@ -501,10 +507,11 @@ server <- function(input, output) {
         #######################################################################
 
         # 1.3.1. Render the probability (in percentage) that a departing air traveler is infected
+        output$PreDeparturePrevalenceTitle <- renderText("Likelihood that a departing air traveler is infected, based on the disease prevalence at origin")
         output$PreDeparturePrevalencePercentageTable <- DT::renderDataTable(
             datatable(
                 data.frame(
-                    "Prevalence" = "Percentage",
+                    "Likelihood" = "In percentage",
                     "Infected" = OriginPrevalence(),
                     "Uninfected" = 1 - OriginPrevalence()
                 ), rownames = NULL, options = list(dom = "t", ordering = F)
@@ -515,7 +522,7 @@ server <- function(input, output) {
         output$PreDeparturePrevalenceHeadcountTable <- DT::renderDataTable(
             datatable(
                 data.frame(
-                    "Prevalence" = "Headcount",
+                    "Likelihood" = "In headcount",
                     "Infected" = OriginPrevalence() * Traffic(),
                     "Uninfected" = (1 - OriginPrevalence()) * Traffic()
                 ), rownames = NULL, options = list(dom = "t", ordering = F)
@@ -528,37 +535,24 @@ server <- function(input, output) {
         # 1.4. CHARTS PANEL                                                   #
         #######################################################################
         
-        # Render a bar plot to display the disease prevalence at origin and destination
-        output$PrevalenceChart <- renderPlot({
-            ggplot(
-                data = data.frame(
-                    "Location" = c(
-                        ifelse(input$OriginPrevalenceChoice == "Automatic (based on latest state data)", input$OriginState, "Disease prevalence at origin"),
-                        ifelse(input$DestinationPrevalenceChoice == "Automatic (based on latest state data)", input$DestinationState, "Disease prevalence at destination")
-                    ),
-                    "Prevalence" = c(OriginPrevalence(), DestinationPrevalence())
-                ),
-                aes(x = reorder(Location, desc(Location)), y = Prevalence)
-            ) +
-            geom_bar(stat="identity") +
-            theme_classic() +
-            theme(axis.title.x=element_blank()) +
-            scale_y_continuous(labels = scales::percent)
-        })
-        
         # Render a line plot to display the historical disease prevalence at origin and destination
+        output$PrevalenceChartTitle <- renderText(paste(input$IncidenceMovingAverage, "-day disease prevalence at origin (red) and destination (blue)"))
         output$HistoricalPrevalenceChart <- renderPlot({
             ggplot(
                 data = IncidenceTable() %>%
                     filter(Country == input$OriginState | Country == input$DestinationState) %>%
                     select(Date, Country, MovingAveragePrevalence) %>%
                     pivot_wider(names_from = Country, values_from = MovingAveragePrevalence) %>%
-                    rename(Destination = input$DestinationState, Origin = input$OriginState) %>%
+                    rename(DestinationAutomatic = input$DestinationState, OriginAutomatic = input$OriginState) %>%
+                    mutate(OriginManual = rep(OriginPrevalence(),length(IncidenceTable))) %>%
+                    mutate(DestinationManual = rep(DestinationPrevalence(),length(IncidenceTable))) %>%
                     remove_missing(),
                 aes(x = Date)
             ) +
-            geom_line(aes(y = Origin), color = "blue") +
-            geom_line(aes(y = Destination), color = "red") +
+            geom_line(aes(y = if(input$OriginPrevalenceChoice == "Automatic (based on latest state data)") { OriginAutomatic } else { OriginManual }), color = "red") +
+            geom_line(aes(y = if(input$DestinationPrevalenceChoice == "Automatic (based on latest state data)") { DestinationAutomatic } else { DestinationManual }), color = "blue") +
+            ylab("Disease prevalence") +
+            scale_y_continuous(labels = scales::percent) +
             theme_classic()
         })
         
