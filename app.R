@@ -183,9 +183,11 @@ ui <- fluidPage(
                 ###############################################################
                 # 1.1 SUMMARY PANEL                                          #
                 ###############################################################
+                
                 tabPanel("Summary",
                     br(),
-                    p(align = "center", LabelOutputSummary1)
+                    em(align = "center", textOutput("a")),
+                    uiOutput("PreDepartureInfectionSummary")
                 ),
 
                 ###############################################################
@@ -504,6 +506,19 @@ server <- function(input, output) {
             arrange(Country, desc(Date))%>%                                     # Final sort by latest date first
             remove_missing(vars = "RollingPrevalence")                          # Remove rows beyond the range of the moving average calculation window
     })
+    
+    ###########################################################################
+    # DECLARE VARIABLES                                                       #
+    ###########################################################################
+
+    OriginPrevalence <- reactive({ ifelse(input$OriginPrevalenceChoice == "Automatic (based on latest state data)", IncidenceTable()[which(IncidenceTable()$Country == input$OriginState), 6, drop = TRUE], input$OriginPrevalence / 100) })
+    DestinationPrevalence <- reactive({ ifelse(input$DestinationPrevalenceChoice == "Automatic (based on latest state data)", IncidenceTable()[which(IncidenceTable()$Country == input$DestinationState), 6, drop = TRUE], input$DestinationPrevalence / 100) })
+    PreDepartureCount <- reactive({ ifelse(input$PopulationCountChoice == "Automatic (based on 2019 O&D traffic for that pair)", max(TrafficTable[ which(TrafficTable$Origin == input$OriginState & TrafficTable$Destination == input$DestinationState), 3, drop = TRUE],0), input$PopulationCount) })
+    PreDepartureInfectedPercentage <- reactive({ OriginPrevalence() })
+    PreDepartureUninfectedPercentage <- reactive({ 1 - OriginPrevalence() })
+    DestinationInfectedPercentage <- reactive({ DestinationPrevalence() })
+    PreDepartureInfectedCount <- reactive({ OriginPrevalence() * PreDepartureCount() })
+    PreDepartureUninfectedCount <- reactive({ (1 - OriginPrevalence()) * PreDepartureCount() })
 
     ###########################################################################
     # 1. PRE-DEPARTURE PRE-TEST OUTCOMES                                      #
@@ -513,17 +528,23 @@ server <- function(input, output) {
         # 1.1. SUMMARY PANEL                                                 #
         #######################################################################
 
+        output$PreDepartureInfectionSummary <- renderUI({ HTML(paste(
+            "<ul><li><span style=color:#1E32FA>",
+            formattable::percent(PreDepartureInfectedPercentage()),
+            "</span> or <span style=color:#1E32FA>",
+            formatC(PreDepartureInfectedCount(), format="d", big.mark=','),
+            "</span> departing travelers p.a. are presumed infected, from the assumed disease prevalence in the general population at origin.</li>",
+            "<li>This is <span style=color:#1E32FA>",
+            ifelse(PreDepartureInfectedPercentage() > DestinationInfectedPercentage(), "higher", "lower"),
+            "</span> than the disease prevalence at destination, which means there is a <span style=color:#1E32FA>",
+            ifelse(PreDepartureInfectedPercentage() > DestinationInfectedPercentage(), "positive", "negative"),
+            "</span> relative risk of importation of cases before testing.</li></ul>"))
+        })
         
-
         #######################################################################
         # 1.2. ASSUMPTIONS PANEL                                              #
         #######################################################################
 
-        # Set the origin prevalence, destination prevalence, and traffic between origin and destination to either those of the selected states or defined manually by the user
-        OriginPrevalence <- reactive({ ifelse(input$OriginPrevalenceChoice == "Automatic (based on latest state data)", IncidenceTable()[which(IncidenceTable()$Country == input$OriginState), 6, drop = TRUE], input$OriginPrevalence / 100) })
-        DestinationPrevalence <- reactive({ ifelse(input$DestinationPrevalenceChoice == "Automatic (based on latest state data)", IncidenceTable()[which(IncidenceTable()$Country == input$DestinationState), 6, drop = TRUE], input$DestinationPrevalence / 100) })
-        PreDepartureCount <- reactive({ ifelse(input$PopulationCountChoice == "Automatic (based on 2019 O&D traffic for that pair)", max(TrafficTable[ which(TrafficTable$Origin == input$OriginState & TrafficTable$Destination == input$DestinationState), 3, drop = TRUE],0), input$PopulationCount) })
-    
         # Render the prevalence assumptions
         output$PrevalenceAssumptionsTitle <- renderText("Disease prevalence at origin and destination (left), and passenger traffic (right)")
         output$PrevalenceAssumptionsTable <- DT::renderDataTable(
@@ -536,7 +557,6 @@ server <- function(input, output) {
                 formatPercentage(columns = 2, digits = 1) %>%
                 formatStyle(columns = 2,  color = "#1E32FA")
         )
-
         # Render the traffic assumptions
         output$TrafficAssumptionsTable <- DT::renderDataTable(
             datatable(
@@ -551,11 +571,7 @@ server <- function(input, output) {
         # 1.3. OUTPUTS PANEL                                                  #
         #######################################################################
 
-        # Set and render the pre-departure likelihood of infection
-        PreDepartureInfectedPercentage <- reactive({ OriginPrevalence() })
-        PreDepartureUninfectedPercentage <- reactive({ 1 - OriginPrevalence() })
-        PreDepartureInfectedCount <- reactive({ OriginPrevalence() * PreDepartureCount() })
-        PreDepartureUninfectedCount <- reactive({ (1 - OriginPrevalence()) * PreDepartureCount() })
+        # Render the pre-departure likelihood of infection
         output$PreDepartureInfectionTitle <- renderText("Likelihood that a departing air traveler is infected, based on the disease prevalence at origin")
         output$PreDepartureInfectionPercentageTable <- DT::renderDataTable(
             datatable(
