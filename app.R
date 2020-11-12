@@ -281,7 +281,7 @@ ui <- fluidPage(
                 ###############################################################
                 tabPanel("Charts",
                     br(),
-                    p(align = "center", "Lorem ipsum dolor sit amet.")
+                    em(align = "center", textOutput("PreDepartureTestChartTitle")),
                 )
 
             ),
@@ -425,40 +425,45 @@ server <- function(input, output) {
     # DECLARE VARIABLES                                                       #
     ###########################################################################
     
-    # Section 1
+    # Section 1 assumptions
     OriginPrevalence <- reactive({ ifelse(input$OriginPrevalenceChoice == "Automatic (based on latest state data)", IncidenceTable()[which(IncidenceTable()$Country == input$OriginState), 6, drop = TRUE], input$OriginPrevalence / 100) })
     DestinationPrevalence <- reactive({ ifelse(input$DestinationPrevalenceChoice == "Automatic (based on latest state data)", IncidenceTable()[which(IncidenceTable()$Country == input$DestinationState), 6, drop = TRUE], input$DestinationPrevalence / 100) })
     PreDepartureCount <- reactive({ ifelse(input$PopulationCountChoice == "Automatic (based on 2019 O&D traffic for that pair)", max(TrafficTable[ which(TrafficTable$Origin == input$OriginState & TrafficTable$Destination == input$DestinationState), 3, drop = TRUE],0), input$PopulationCount) })
+    # Section 1 results
     PreDepartureInfectedPercentage <- reactive({ OriginPrevalence() })
     PreDepartureUninfectedPercentage <- reactive({ 1 - OriginPrevalence() })
     PreDepartureInfectedCount <- reactive({ OriginPrevalence() * PreDepartureCount() })
     PreDepartureUninfectedCount <- reactive({ (1 - OriginPrevalence()) * PreDepartureCount() })
-#    DestinationInfectedPercentage <- reactive({ DestinationPrevalence() })
-    # Section 2
+    # Section 2 assumptions
     PreDepartureTestLimitOfDetection <- reactive({ ifelse(input$PreDepartureTestMethod != "None", input$PreDepartureTestLimitOfDetection, NA) })
     PreDepartureTestSensitivity <- reactive({ ifelse(input$PreDepartureTestMethod != "None", input$PreDepartureTestSensitivity / 100, NA) })
     PreDepartureTestSpecificity <- reactive({ ifelse(input$PreDepartureTestMethod != "None", input$PreDepartureTestSpecificity / 100, NA) })
     PreDepartureTestPopulationPercentage <- reactive({ ifelse(input$PreDepartureTestMethod != "None", input$PreDepartureTestSampleSize / 100, 0) })
     PreDepartureTestPopulationCount <- reactive({ PreDepartureCount() * PreDepartureTestPopulationPercentage() })
+    # Section 2 results, table 1
     PreDeparturePositiveTestPercentage <- reactive({ (PreDepartureTestSensitivity() * OriginPrevalence() + (1 - PreDepartureTestSpecificity()) * (1 - OriginPrevalence())) })
     PreDepartureNegativeTestPercentage <- reactive({ ((1 - PreDepartureTestSensitivity()) * OriginPrevalence() + PreDepartureTestSpecificity() * (1 - OriginPrevalence())) })
     PreDeparturePositiveTestCount <- reactive({ PreDeparturePositiveTestPercentage() * PreDepartureCount() })
     PreDepartureNegativeTestCount <- reactive({ PreDepartureNegativeTestPercentage() * PreDepartureCount() })
-
-    PreDeparturePositiveTestGivenInfectedPercentage <- reactive({ ifelse(input$PreDepartureTestMethod != "None", input$PreDepartureTestSensitivity / 100, NA) })
-    PreDeparturePositiveTestGivenUninfectedPercentage <- reactive({ ifelse(input$PreDepartureTestMethod != "None", 1 - input$PreDepartureTestSpecificity / 100, NA) })
-    PreDepartureNegativeTestGivenInfectedPercentage <- reactive({ ifelse(input$PreDepartureTestMethod != "None", 1 - input$PreDepartureTestSensitivity / 100, NA) })
-    PreDepartureNegativeTestGivenUninfectedPercentage <- reactive({ ifelse(input$PreDepartureTestMethod != "None", input$PreDepartureTestSpecificity / 100, NA) })
+    # Section 2 results, table 2
+    PreDeparturePositiveTestGivenInfectedPercentage <- reactive({ PreDepartureTestSensitivity() })
+    PreDeparturePositiveTestGivenUninfectedPercentage <- reactive({ 1 - PreDepartureTestSpecificity() })
+    PreDepartureNegativeTestGivenInfectedPercentage <- reactive({ 1 - PreDepartureTestSensitivity() })
+    PreDepartureNegativeTestGivenUninfectedPercentage <- reactive({ PreDepartureTestSpecificity() })
     PreDeparturePositiveTestGivenInfectedCount <- reactive({ PreDeparturePositiveTestGivenInfectedPercentage() * PreDepartureInfectedCount() })
     PreDeparturePositiveTestGivenUninfectedCount <- reactive({ PreDeparturePositiveTestGivenUninfectedPercentage() * PreDepartureUninfectedCount() })
     PreDepartureNegativeTestGivenInfectedCount <- reactive({ PreDepartureNegativeTestGivenInfectedPercentage() * PreDepartureInfectedCount() })
     PreDepartureNegativeTestGivenUninfectedCount <- reactive({ PreDepartureNegativeTestGivenUninfectedPercentage() * PreDepartureUninfectedCount() })
-    
+    # Section 2 results, table 3
     PreDepartureInfectedGivenPositiveTestPercentage <- reactive({ PreDepartureTestSensitivity() * OriginPrevalence() / (PreDepartureTestSensitivity() * OriginPrevalence() + (1 - PreDepartureTestSpecificity()) * (1 - OriginPrevalence())) })
     PreDepartureInfectedGivenNegativeTestPercentage <- reactive({ (1 - PreDepartureTestSensitivity()) * OriginPrevalence() / ((1 - PreDepartureTestSensitivity()) * OriginPrevalence() + PreDepartureTestSpecificity() * (1 - OriginPrevalence())) })
     PreDepartureUninfectedGivenPositiveTestPercentage <- reactive({ (1 - PreDepartureTestSpecificity()) * (1 - OriginPrevalence()) / (PreDepartureTestSensitivity() * OriginPrevalence() + (1 - PreDepartureTestSpecificity()) * (1 - OriginPrevalence())) })
     PreDepartureUninfectedGivenNegativeTestPercentage <- reactive({ PreDepartureTestSpecificity() * (1 - OriginPrevalence()) / ((1 - PreDepartureTestSensitivity()) * OriginPrevalence() + PreDepartureTestSpecificity() * (1 - OriginPrevalence())) })
-    
+    PreDepartureInfectedGivenPositiveTestCount <- reactive({ PreDepartureInfectedGivenPositiveTestPercentage() * PreDeparturePositiveTestCount() })
+    PreDepartureInfectedGivenNegativeTestCount <- reactive({ PreDepartureInfectedGivenNegativeTestPercentage() * PreDepartureNegativeTestCount() })
+    PreDepartureUninfectedGivenPositiveTestCount <- reactive({ PreDepartureUninfectedGivenPositiveTestPercentage() * PreDeparturePositiveTestCount() })
+    PreDepartureUninfectedGivenNegativeTestCount <- reactive({ PreDepartureUninfectedGivenNegativeTestPercentage() * PreDepartureNegativeTestCount() })
+    # Section 3 assumptions
     PostArrivalCount <- reactive({ PreDepartureCount() - PreDeparturePositiveTestGivenInfectedCount() })
     PostArrivalInfectedPercentage <- reactive({ PreDepartureNegativeTestGivenInfectedCount() / PostArrivalCount() })
     
@@ -615,14 +620,20 @@ server <- function(input, output) {
                         "<li>Out of the <span style=color:#1E32FA>", formattable::percent(PreDepartureInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureInfectedCount(), format="d", big.mark=","), "</span> out of <span style=color:#1E32FA>", formatC(PreDepartureCount(), format="d", big.mark=","), "</span>) of departing travelers who are presumed infected:</li>",
                             "<ul>",
                             "<li><span style=color:#1E32FA>", formattable::percent(PreDeparturePositiveTestGivenInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDeparturePositiveTestGivenInfectedCount(), format="d", big.mark=","), "</span>) test positive (true positives) and are correctly prevented from boarding.</li>",
-                            "<li><span style=color:#1E32FA>", formattable::percent(PreDepartureNegativeTestGivenInfectedPercentage(),1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureNegativeTestGivenInfectedCount(), format="d", big.mark=","),"</span>) test negative (false negatives) and are incorrectly allowed to board.</li>",
-                            "<li>Testing decreased the importation risk from <span style=color:#1E32FA>", formattable::percent(PreDepartureInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureInfectedCount(), format="d", big.mark=","), "</span> out of <span style=color:#1E32FA>", formatC(PreDepartureCount(), format="d", big.mark=","), "</span>) to <span style=color:#1E32FA>", formattable::percent(PostArrivalInfectedPercentage(),1),"</span> (<span style=color:#1E32FA>", formatC(PreDepartureNegativeTestGivenInfectedCount(), format="d", big.mark=","),"</span> out of <span style=color:#1E32FA>", formatC(PostArrivalCount(), format="d", big.mark=","), "</span> cleared travelers).</li>",
+                            "<li><span style=color:#1E32FA>", formattable::percent(PreDepartureNegativeTestGivenInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureNegativeTestGivenInfectedCount(), format="d", big.mark=","),"</span>) test negative (false negatives) and are incorrectly allowed to board.</li>",
+                            "<li>Pre-departure testing decreased the importation risk from <span style=color:#1E32FA>", formattable::percent(PreDepartureInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureInfectedCount(), format="d", big.mark=","), "</span> out of <span style=color:#1E32FA>", formatC(PreDepartureCount(), format="d", big.mark=","), "</span>) to <span style=color:#1E32FA>", formattable::percent(PostArrivalInfectedPercentage(),1),"</span> (<span style=color:#1E32FA>", formatC(PreDepartureNegativeTestGivenInfectedCount(), format="d", big.mark=","),"</span> out of <span style=color:#1E32FA>", formatC(PostArrivalCount(), format="d", big.mark=","), "</span> cleared travelers).</li>",
                             "</ul>",
                             "<br>",
                         "<li>Out of the <span style=color:#1E32FA>", formattable::percent(PreDepartureUninfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureUninfectedCount(), format="d", big.mark=","), "</span> out of <span style=color:#1E32FA>", formatC(PreDepartureCount(), format="d", big.mark=","), "</span>) of departing travelers who are presumed uninfected:</li>",
                             "<ul>",
                             "<li><span style=color:#1E32FA>", formattable::percent(PreDepartureNegativeTestGivenUninfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureNegativeTestGivenUninfectedCount(), format="d", big.mark=","), "</span>) test negative (true negatives) and are correctly allowed to board.</li>",
-                            "<li><span style=color:#1E32FA>", formattable::percent(PreDeparturePositiveTestGivenUninfectedPercentage(),1), "</span> (<span style=color:#1E32FA>", formatC(PreDeparturePositiveTestGivenUninfectedCount(), format="d", big.mark=","),"</span>) test positive (false positives) and are incorrectly prevented from boarding, and presumably cleared after retest.</li>",
+                            "<li><span style=color:#1E32FA>", formattable::percent(PreDeparturePositiveTestGivenUninfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDeparturePositiveTestGivenUninfectedCount(), format="d", big.mark=","),"</span>) test positive (false positives) and are incorrectly prevented from boarding, and presumably cleared after retest.</li>",
+                            "</ul>",
+                            "<br>",
+                        "<li>Post-test likelihoods are as follows:</li>",
+                            "<ul>",
+                            "<li>The likelihood that a traveler who tests positive is actually infected is <span style=color:#1E32FA>", formattable::percent(PreDepartureInfectedGivenPositiveTestPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureInfectedGivenPositiveTestCount(), format="d", big.mark=","),"</span> out of all <span style=color:#1E32FA>", formatC(PreDeparturePositiveTestCount(), format="d", big.mark=","), "</span> positive tests).</li>",
+                            "<li>The likelihood that a traveler who tests negative is actually uninfected is <span style=color:#1E32FA>", formattable::percent(PreDepartureUninfectedGivenNegativeTestPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureInfectedGivenNegativeTestCount(), format="d", big.mark=","),"</span> out of all <span style=color:#1E32FA>", formatC(PreDepartureNegativeTestCount(), format="d", big.mark=","), "</span> negative tests).</li>",
                             "</ul>",
                         "</ul>",
                         sep = ""
@@ -747,6 +758,7 @@ server <- function(input, output) {
         #######################################################################
         # 2.4. CHART PANEL                                                    #
         #######################################################################
+        output$PreDepartureTestChartTitle <- renderText("Lorem ipsum dolor sit amet")
         
         #######################################################################
         # 2.5. DATA PANEL                                                     #
