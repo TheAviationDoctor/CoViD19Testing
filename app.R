@@ -4,14 +4,11 @@
 #             contact@theaviationdoctor.com                                   #
 #             https://theaviationdoctor.com                                   #
 ###############################################################################
-
 ###############################################################################
 # HOUSEKEEPING                                                                #
 ###############################################################################
-
 # Clear the console
 #cat("\014")
-
 # Load libraries
 library(DT)                 # To better display data tables
 library(formattable)        # To format numbers for rendering
@@ -20,14 +17,11 @@ library(shiny)              # to build and display the app in a browser
 library(shinycssloaders)    # To style the app and spinners in particular
 library(tidyverse)          # To wrangle the data
 library(zoo)                # To perform rolling means
-
 # Display missing values as NA in DT::datatables
 options(DT.TOJSON_ARGS = list(na = "string"))
-
 ###############################################################################
 # VARIABLE DECLARATION                                                        #
 ###############################################################################
-
 # Header labels
 AppHeader               <- "Air travel COVID-19 testing simulator"
 LabelInputPanel1        <- "Model inputs"
@@ -35,50 +29,38 @@ LabelOutputHeader1      <- "1. Pre-departure, pre-test outcomes"
 LabelOutputHeader2      <- "2. Pre-departure, post-test outcomes"
 LabelOutputHeader3      <- "3. Post-arrival, pre-test outcomes"
 LabelOutputHeader4      <- "4. Post-arrival, post-test outcomes"
-
 #Summary content
 LabelOutputSummary1    <- "This module determines the likelihood that an outbound traveler is infected. Click on the tabs above for details."
 LabelOutputSummary2    <- "This module determines the likelihood that an outbound traveler tests positive on departure independently of everything else (table 2.1) and given an infection status (table 2.2), and that they are infected given a test result (table 2.3). Click on the tabs above for details."
 LabelOutputSummary3    <- "This module determines the likelihood that an inbound traveler tests positive on arrival independently of everything else (table 3.1) and given an infection status (table 3.2), and that they are infected given a test result (table 3.3). Click on the tabs above for details."
 LabelOutputSummary4    <- "This module determines the net importation risk at destination based on all the preceding steps. Click on the tabs above for details."
-
 # Input selectors
 States                  <- list("Afghanistan", "Albania", "Algeria", "American Samoa", "Andorra", "Angola", "Anguilla", "Antigua and Barbuda", "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bermuda", "Bhutan", "Bolivia (Plurinational State of)", "Bonaire, Sint Eustatius and Saba", "Bosnia and Herzegovina", "Botswana", "Brazil", "British Virgin Islands", "Brunei Darussalam", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Cayman Islands", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Cook Islands", "Costa Rica", "Côte d’Ivoire", "Croatia", "Cuba", "Curaçao", "Cyprus", "Czechia", "Democratic People's Republic of Korea", "Democratic Republic of the Congo", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Falkland Islands (Malvinas)", "Faroe Islands", "Fiji", "Finland", "France", "French Guiana", "French Polynesia", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Gibraltar", "Greece", "Greenland", "Grenada", "Guadeloupe", "Guam", "Guatemala", "Guernsey", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Holy See", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran (Islamic Republic of)", "Iraq", "Ireland", "Isle of Man", "Israel", "Italy", "Jamaica", "Japan", "Jersey", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kosovo", "Kuwait", "Kyrgyzstan", "Lao People's Democratic Republic", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Martinique", "Mauritania", "Mauritius", "Mayotte", "Mexico", "Micronesia (Federated States of)", "Monaco", "Mongolia", "Montenegro", "Montserrat", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Caledonia", "New Zealand", "Nicaragua", "Niger", "Nigeria", "Niue", "North Macedonia", "Northern Mariana Islands (Commonwealth of the)", "Norway", "Occupied Palestinian territory, incl. east Jerusalem", "Oman", "Pakistan", "Palau", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Pitcairn Islands", "Poland", "Portugal", "Puerto Rico", "Qatar", "Republic of Korea", "Republic of Moldova", "Réunion", "Romania", "Russian Federation", "Rwanda", "Saint Barthélemy", "Saint Helena", "Saint Kitts and Nevis", "Saint Lucia", "Saint Martin", "Saint Pierre and Miquelon", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Sint Maarten", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syrian Arab Republic", "Tajikistan", "Thailand", "The United Kingdom", "Timor-Leste", "Togo", "Tokelau", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Turks and Caicos Islands", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Republic of Tanzania", "United States of America", "United States Virgin Islands", "Uruguay", "Uzbekistan", "Vanuatu", "Venezuela (Bolivarian Republic of)", "Viet Nam", "Wallis and Futuna", "Yemen", "Zambia", "Zimbabwe")
 DefaultOriginState      <- "United States of America"
 DefaultDestinationState <- "France"
-
 # URLs
 URLEpidemiology         <- "https://covid19.who.int/WHO-COVID-19-global-data.csv"
 URLPopulation           <- "https://raw.githubusercontent.com/TheAviationDoctor/CoViD19Testing/main/data/population.csv"
 URLTraffic              <- "https://raw.githubusercontent.com/TheAviationDoctor/CoViD19Testing/main/data/traffic2019.csv"
-
 ###############################################################################
 # USER INTERFACE LOGIC                                                        #
 ###############################################################################
-
 ui <- fluidPage(
-
     # Globally style the app
     tags$head(
         tags$style("* { font-family: 'Aktiv Grotesk', Arial, sans-serif; !important }"),
         tags$style("hr { border: 1px solid #000000 }")
     ),
-    
     # App header
     titlePanel(AppHeader),
     hr(),
-    
     sidebarLayout(
-
         #######################################################################
         # SIDEBAR PANEL FOR INPUTS                                            #
         #######################################################################
-        
         sidebarPanel(
-
             #Title
             h3(LabelInputPanel1),
-
             # Origin characteristics
             hr(),
             radioButtons(inputId = "OriginPrevalenceChoice", label = "Disease prevalence at origin", choices = list("Manual (enter your own)", "Automatic (based on latest state data)")),
@@ -90,7 +72,6 @@ ui <- fluidPage(
                 condition = "input.OriginPrevalenceChoice == 'Automatic (based on latest state data)'",
                 selectInput(inputId = "OriginState", label = "", choices = States, selected = DefaultOriginState)
             ),
-            
             # Destination characteristics
             hr(),
             radioButtons(inputId = "DestinationPrevalenceChoice", label = "Disease  prevalence at destination", choices = list("Manual (enter your own)", "Automatic (based on latest state data)")),
@@ -102,7 +83,6 @@ ui <- fluidPage(
                 condition = "input.DestinationPrevalenceChoice == 'Automatic (based on latest state data)'",
                 selectInput(inputId = "DestinationState", label = "", choices = States, selected = DefaultDestinationState)
             ),
-            
             # Prevalence characteristics
             conditionalPanel(
                 condition = "input.OriginPrevalenceChoice == 'Automatic (based on latest state data)' | input.DestinationPrevalenceChoice == 'Automatic (based on latest state data)'",
@@ -114,7 +94,6 @@ ui <- fluidPage(
                 sliderInput(inputId = "InfectiousPeriod", label = "Infectious period (days)", min = 1, max = 30, step = 1, value = 12),
                 sliderInput(inputId = "NonSymptomaticRate", label = "Non-symptomatic rate", min = 0, max = 100, step = 1, value = 40)
             ),
-
             # Population characteristics
             hr(),
             radioButtons(inputId = "PopulationCountChoice", label = "Passenger traffic from origin to destination", choices = list("Manual (enter your own)", "Automatic (based on 2019 O&D traffic for that pair)")),
@@ -122,7 +101,6 @@ ui <- fluidPage(
                 condition = "input.PopulationCountChoice == 'Manual (enter your own)'",
                 sliderInput(inputId = "PopulationCount", label = "", min=0, max=4.5*10^9, value=1*10^6)
             ),
-
             # Pre-departure test characteristics
             hr(),
             selectInput(inputId = "PreDepartureTestMethod", label = "Pre-departure test", choices = list("None", "Typical RT-PCR", "Typical RT-LAMP", "Typical RT-RPA", "Typical CRISPR-CaS", "Typical RAT", "Manual (design your own)")),
@@ -137,7 +115,6 @@ ui <- fluidPage(
                 sliderInput(inputId = "PreDepartureTestSensitivity", label = "Clinical sensitivity", min=0, max=100, value=70),
                 sliderInput(inputId = "PreDepartureTestSpecificity", label = "Clinical specificity", min=0, max=100, value=95)
             ),
-
             # Post-arrival test characteristics
             hr(),
             selectInput(inputId = "PostArrivalTestMethod", label = "Post-arrival test", choices = list("None", "Typical RT-PCR", "Typical RT-LAMP", "Typical RT-RPA", "Typical CRISPR-CaS", "Typical RAT", "Manual (design your own)")),
@@ -153,31 +130,23 @@ ui <- fluidPage(
                 sliderInput(inputId = "PostArrivalTestSpecificity", label = "Clinical specificity", min=0, max=100, value=95)
             ),
         ),
-        
         #######################################################################
         # MAIN PANEL FOR OUTPUTS                                              #
         #######################################################################
-        
         mainPanel(
-            
             ###################################################################
             # 1. PRE-DEPARTURE PRE-TEST OUTCOMES                              #
             ###################################################################
-
             DT::dataTableOutput("PrevalenceChartTable"),
-            
             h3(LabelOutputHeader1),
             tabsetPanel(
-                
                 ###############################################################
                 # 1.1 SUMMARY PANEL                                          #
                 ###############################################################
-                
                 tabPanel("Summary",
                     br(),
                     uiOutput("PreDepartureInfectionSummary")
                 ),
-
                 ###############################################################
                 # 1.2 ASSUMPTIONS PANEL                                       #
                 ###############################################################
@@ -192,9 +161,8 @@ ui <- fluidPage(
                     em(align = "center", textOutput("IncidenceTableTitle")),
                     withSpinner(DT::dataTableOutput("IncidenceTable"))
                 ),
-
                 ###############################################################
-                # 1.3 OUTPUTS PANEL                                           #
+                # 1.3 RESULTS PANEL                                           #
                 ###############################################################
                 tabPanel("Results",
                     br(),
@@ -204,7 +172,6 @@ ui <- fluidPage(
                         column(6, withSpinner(DT::dataTableOutput("PreDepartureInfectionCountTable")))
                     )
                 ),
-                
                 ###############################################################
                 # 1.4 CHARTS PANEL                                            #
                 ###############################################################
@@ -216,27 +183,21 @@ ui <- fluidPage(
 
             ),
             hr(),
-            
             ###################################################################
             # 2. PRE-DEPARTURE POST-TEST OUTCOMES                             #
             ###################################################################
-
             h3(LabelOutputHeader2),
             tabsetPanel(
-                
                 ###############################################################
                 # 2.1 SUMMARY PANEL                                          #
                 ###############################################################
-                
                 tabPanel("Summary",
                          br(),
                          uiOutput("PreDepartureTestResultsSummary")
                 ),
-                
                 ###############################################################
                 # 2.2 ASSUMPTIONS PANEL                                       #
                 ###############################################################
-                
                 tabPanel("Assumptions",
                     br(),
                     em(align = "center", textOutput("PreDepartureTestAssumptionsTitle")),
@@ -245,37 +206,59 @@ ui <- fluidPage(
                         column(6, withSpinner(DT::dataTableOutput("PreDepartureTestPopulationAssumptionsTable")))
                     ),
                 ),
-                
                 ###############################################################
-                # 2.3 OUTPUTS PANEL                                           #
+                # 2.3 RESULTS PANEL                                           #
                 ###############################################################
                 tabPanel("Results",
                     br(),
-                    
+                    em(align = "center", textOutput("PreDeparturePopulationTitle")),
+                    fluidRow(
+                        column(6, withSpinner(DT::dataTableOutput("PreDeparturePopulationPercentageTable"))),
+                        column(6, withSpinner(DT::dataTableOutput("PreDeparturePopulationCountTable")))
+                    ),
+                    br(),
                     # Table 2.1
+                    em(align = "center", textOutput("PreDepartureSampleTitle")),
+                    fluidRow(
+                        column(6, withSpinner(DT::dataTableOutput("PreDepartureSamplePercentageTable"))),
+                        column(6, withSpinner(DT::dataTableOutput("PreDepartureSampleCountTable")))
+                    ),
+                    br(),
+                    # Table 2.2
                     em(align = "center", textOutput("PreDepartureTestResultsTitle")),
                     fluidRow(
                         column(6, withSpinner(DT::dataTableOutput("PreDepartureTestResultsPercentageTable"))),
                         column(6, withSpinner(DT::dataTableOutput("PreDepartureTestResultsCountTable")))
                     ),
                     br(),
-                    
-                    # Table 2.2
+                    # Table 2.3
                     em(align = "center", textOutput("PreDepartureTestResultsGivenInfectionTitle")),
                     fluidRow(
                         column(6, withSpinner(DT::dataTableOutput("PreDepartureTestResultsGivenInfectionPercentageTable"))),
                         column(6, withSpinner(DT::dataTableOutput("PreDepartureTestResultsGivenInfectionCountTable")))
                     ),
                     br(),
-                    
-                    # Table 2.3
+                    # Table 2.4
                     em(align = "center", textOutput("PreDepartureInfectionGivenTestResultsTitle")),
                     fluidRow(
                         column(6, withSpinner(DT::dataTableOutput("PreDepartureInfectionGivenTestResultsPercentageTable"))),
                         column(6, withSpinner(DT::dataTableOutput("PreDepartureInfectionGivenTestResultsCountTable")))
                     ),
+                    br(),
+                    # Table 2.5
+                    em(align = "center", textOutput("PreDepartureTestTitle")),
+                    fluidRow(
+                        column(6, withSpinner(DT::dataTableOutput("PreDepartureTestClearedPercentageTable"))),
+                        column(6, withSpinner(DT::dataTableOutput("PreDepartureTestClearedCountTable")))
+                    ),
+                    br(),
+                    # Table 2.6
+                    em(align = "center", textOutput("PreDepartureTestResidualTitle")),
+                    fluidRow(
+                        column(6, withSpinner(DT::dataTableOutput("PreDepartureTestResidualPercentageTable"))),
+                        column(6, withSpinner(DT::dataTableOutput("PreDepartureTestResidualCountTable")))
+                    ),
                 ),
-                
                 ###############################################################
                 # 2.4 CHARTS PANEL                                            #
                 ###############################################################
@@ -283,65 +266,84 @@ ui <- fluidPage(
                     br(),
                     em(align = "center", textOutput("PreDepartureTestChartTitle")),
                 )
-
             ),
             hr(),
-
             ###################################################################
             # 3. POST-ARRIVAL PRE-TEST OUTCOMES                               #
             ###################################################################
-
             h3(LabelOutputHeader3),
             tabsetPanel(
-                
                 ###############################################################
                 # 3.1 SUMMARY PANEL                                          #
                 ###############################################################
                 tabPanel("Summary",
                     br(),
-                    p(align = "center", LabelOutputSummary3)
+                    uiOutput("PostArrivalInfectionSummary")
                 ),
-                
                 ###############################################################
                 # 3.2 ASSUMPTIONS PANEL                                       #
                 ###############################################################
                 tabPanel("Assumptions",
                          br(),
-                         p(align = "center", "Lorem ipsum dolor sit amet.")
+                         em(align = "center", textOutput("PostArrivalPopulationTitle")),
+                         fluidRow(
+                             column(6, withSpinner(DT::dataTableOutput("PostArrivalPopulationPercentageTable"))),
+                             column(6, withSpinner(DT::dataTableOutput("PostArrivalPopulationCountTable")))
+                         ),
+                         br(),
+                         em(align = "center", textOutput("PostArrivalTestAssumptionsTitle")),
+                         fluidRow(
+                             column(6, withSpinner(DT::dataTableOutput("PostArrivalTestCharacteristicsAssumptionsTable"))),
+                             column(6, withSpinner(DT::dataTableOutput("PostArrivalTestPopulationAssumptionsTable")))
+                         ),
                 ),
-                
                 ###############################################################
-                # 3.3 OUTPUTS PANEL                                           #
+                # 3.3 RESULTS PANEL                                           #
                 ###############################################################
                 tabPanel("Results",
-                    br(),
-                    
-                    # Table 3.1
-                    p(align = "center", "3.1. Disease prevalence among air travelers upon arrival (percentage)"),
-                    fluidRow(
-                        column(6, withSpinner(DT::dataTableOutput("PostArrivalPrevalencePercentageTable"))),
-                        column(6, withSpinner(DT::dataTableOutput("PostArrivalPrevalenceCountTable")))
-                    ),
+                         br(),
+                         # Table 3.1
+                         em(align = "center", textOutput("PostArrivalTestResultsTitle")),
+                         fluidRow(
+                             column(6, withSpinner(DT::dataTableOutput("PostArrivalTestResultsPercentageTable"))),
+                             column(6, withSpinner(DT::dataTableOutput("PostArrivalTestResultsCountTable")))
+                         ),
+                         br(),
+                         # Table 3.2
+                         em(align = "center", textOutput("PostArrivalTestResultsGivenInfectionTitle")),
+                         fluidRow(
+                             column(6, withSpinner(DT::dataTableOutput("PostArrivalTestResultsGivenInfectionPercentageTable"))),
+                             column(6, withSpinner(DT::dataTableOutput("PostArrivalTestResultsGivenInfectionCountTable")))
+                         ),
+                         br(),
+                         # Table 3.3
+                         em(align = "center", textOutput("PostArrivalInfectionGivenTestResultsTitle")),
+                         fluidRow(
+                             column(6, withSpinner(DT::dataTableOutput("PostArrivalInfectionGivenTestResultsPercentageTable"))),
+                             column(6, withSpinner(DT::dataTableOutput("PostArrivalInfectionGivenTestResultsCountTable")))
+                         ),
+                         br(),
+                         # Table 3.4
+                         em(align = "center", textOutput("PostArrivalPostTestTitle")),
+                         fluidRow(
+                             column(6, withSpinner(DT::dataTableOutput("PostArrivalPostTestClearedPercentageTable"))),
+                             column(6, withSpinner(DT::dataTableOutput("PostArrivalPostTestClearedCountTable")))
+                         ),
                 ),
-                
                 ###############################################################
                 # 3.4 CHARTS PANEL                                            #
                 ###############################################################
                 tabPanel("Charts",
-                    br(),
-                    p(align = "center", "Lorem ipsum dolor sit amet."),
+                         br(),
+                         em(align = "center", textOutput("PostArrivalTestChartTitle")),
                 )
-                
             ),
             hr(),
-
             ###################################################################
             # 4. POST-ARRIVAL POST-TEST OUTCOMES                              #
             ###################################################################
-
             h3(LabelOutputHeader4),
             tabsetPanel(
-            
                 ###############################################################
                 # 4.1 SUMMARY PANEL                                          #
                 ###############################################################
@@ -349,7 +351,6 @@ ui <- fluidPage(
                     br(),
                     p(align = "center", LabelOutputSummary4),
                 ),
-                
                 ###############################################################
                 # 4.2 ASSUMPTIONS PANEL                                       #
                 ###############################################################
@@ -357,21 +358,13 @@ ui <- fluidPage(
                          br(),
                          p(align = "center", "Lorem ipsum dolor sit amet.")
                 ),
-                
                 ###############################################################
-                # 4.3 OUTPUTS PANEL                                           #
+                # 4.3 RESULTS PANEL                                           #
                 ###############################################################
                 tabPanel("Results",
                     br(),
                 
-                    # Table 3.1
-                    p(align = "center", "4.1. )"),
-                    fluidRow(
-                        column(6, withSpinner(DT::dataTableOutput("PostArrivalPostTestPercentageTable"))),
-                        column(6, withSpinner(DT::dataTableOutput("PostArrivalPostTestCountTable")))
-                    ),
                 ),
-                
                 ###############################################################
                 # 4.4 CHARTS PANEL                                            #
                 ###############################################################
@@ -383,25 +376,19 @@ ui <- fluidPage(
         )
     )
 )
-
 ###############################################################################
 # SERVER LOGIC                                                                #
 ###############################################################################
-
 server <- function(input, output) {
-
     ###########################################################################
     # IMPORT AND WRANGLE DATA                                                 #
     ###########################################################################
-    
     # Import and wrangle the population data
     PopulationTable <- pin(URLPopulation) %>%
         read_csv(na = "", col_types = list(col_factor(), col_integer()))
-    
     # Import and wrangle the 2019 origin-destination passenger traffic
     TrafficTable <- pin(URLTraffic) %>%
         read_csv(na = "", col_types = list(col_factor(), col_factor(), col_integer()))
-    
     # Import and wrangle the WHO epidemiological data, then calculate the disease prevalence by country per 100 people using the CAPSCA formula
     IncidenceTable <- reactive({
         pin(URLEpidemiology) %>%                                                   # Read from the cached file
@@ -420,114 +407,170 @@ server <- function(input, output) {
             arrange(Country, desc(Date))%>%                                     # Final sort by latest date first
             remove_missing(vars = "RollingPrevalence")                          # Remove rows beyond the range of the moving average calculation window
     })
-    
     ###########################################################################
     # DECLARE VARIABLES                                                       #
     ###########################################################################
-    
-    # Section 1 assumptions
+    # Starting assumptions
     OriginPrevalence <- reactive({ ifelse(input$OriginPrevalenceChoice == "Automatic (based on latest state data)", IncidenceTable()[which(IncidenceTable()$Country == input$OriginState), 6, drop = TRUE], input$OriginPrevalence / 100) })
     DestinationPrevalence <- reactive({ ifelse(input$DestinationPrevalenceChoice == "Automatic (based on latest state data)", IncidenceTable()[which(IncidenceTable()$Country == input$DestinationState), 6, drop = TRUE], input$DestinationPrevalence / 100) })
-    PreDepartureCount <- reactive({ ifelse(input$PopulationCountChoice == "Automatic (based on 2019 O&D traffic for that pair)", max(TrafficTable[ which(TrafficTable$Origin == input$OriginState & TrafficTable$Destination == input$DestinationState), 3, drop = TRUE],0), input$PopulationCount) })
-    # Section 1 results
-    PreDepartureInfectedPercentage <- reactive({ OriginPrevalence() })
-    PreDepartureUninfectedPercentage <- reactive({ 1 - OriginPrevalence() })
-    PreDepartureInfectedCount <- reactive({ OriginPrevalence() * PreDepartureCount() })
-    PreDepartureUninfectedCount <- reactive({ (1 - OriginPrevalence()) * PreDepartureCount() })
-    # Section 2 assumptions
-    PreDepartureTestLimitOfDetection <- reactive({ ifelse(input$PreDepartureTestMethod != "None", input$PreDepartureTestLimitOfDetection, NA) })
-    PreDepartureTestSensitivity <- reactive({ ifelse(input$PreDepartureTestMethod != "None", input$PreDepartureTestSensitivity / 100, NA) })
-    PreDepartureTestSpecificity <- reactive({ ifelse(input$PreDepartureTestMethod != "None", input$PreDepartureTestSpecificity / 100, NA) })
-    PreDepartureTestPopulationPercentage <- reactive({ ifelse(input$PreDepartureTestMethod != "None", input$PreDepartureTestSampleSize / 100, 0) })
-    PreDepartureTestPopulationCount <- reactive({ PreDepartureCount() * PreDepartureTestPopulationPercentage() })
-    # Section 2 results, table 1
-    PreDeparturePositiveTestPercentage <- reactive({ (PreDepartureTestSensitivity() * OriginPrevalence() + (1 - PreDepartureTestSpecificity()) * (1 - OriginPrevalence())) })
-    PreDepartureNegativeTestPercentage <- reactive({ ((1 - PreDepartureTestSensitivity()) * OriginPrevalence() + PreDepartureTestSpecificity() * (1 - OriginPrevalence())) })
-    PreDeparturePositiveTestCount <- reactive({ PreDeparturePositiveTestPercentage() * PreDepartureCount() })
-    PreDepartureNegativeTestCount <- reactive({ PreDepartureNegativeTestPercentage() * PreDepartureCount() })
-    # Section 2 results, table 2
-    PreDeparturePositiveTestGivenInfectedPercentage <- reactive({ PreDepartureTestSensitivity() })
-    PreDeparturePositiveTestGivenUninfectedPercentage <- reactive({ 1 - PreDepartureTestSpecificity() })
-    PreDepartureNegativeTestGivenInfectedPercentage <- reactive({ 1 - PreDepartureTestSensitivity() })
-    PreDepartureNegativeTestGivenUninfectedPercentage <- reactive({ PreDepartureTestSpecificity() })
-    PreDeparturePositiveTestGivenInfectedCount <- reactive({ PreDeparturePositiveTestGivenInfectedPercentage() * PreDepartureInfectedCount() })
-    PreDeparturePositiveTestGivenUninfectedCount <- reactive({ PreDeparturePositiveTestGivenUninfectedPercentage() * PreDepartureUninfectedCount() })
-    PreDepartureNegativeTestGivenInfectedCount <- reactive({ PreDepartureNegativeTestGivenInfectedPercentage() * PreDepartureInfectedCount() })
-    PreDepartureNegativeTestGivenUninfectedCount <- reactive({ PreDepartureNegativeTestGivenUninfectedPercentage() * PreDepartureUninfectedCount() })
-    # Section 2 results, table 3
-    PreDepartureInfectedGivenPositiveTestPercentage <- reactive({ PreDepartureTestSensitivity() * OriginPrevalence() / (PreDepartureTestSensitivity() * OriginPrevalence() + (1 - PreDepartureTestSpecificity()) * (1 - OriginPrevalence())) })
-    PreDepartureInfectedGivenNegativeTestPercentage <- reactive({ (1 - PreDepartureTestSensitivity()) * OriginPrevalence() / ((1 - PreDepartureTestSensitivity()) * OriginPrevalence() + PreDepartureTestSpecificity() * (1 - OriginPrevalence())) })
-    PreDepartureUninfectedGivenPositiveTestPercentage <- reactive({ (1 - PreDepartureTestSpecificity()) * (1 - OriginPrevalence()) / (PreDepartureTestSensitivity() * OriginPrevalence() + (1 - PreDepartureTestSpecificity()) * (1 - OriginPrevalence())) })
-    PreDepartureUninfectedGivenNegativeTestPercentage <- reactive({ PreDepartureTestSpecificity() * (1 - OriginPrevalence()) / ((1 - PreDepartureTestSensitivity()) * OriginPrevalence() + PreDepartureTestSpecificity() * (1 - OriginPrevalence())) })
-    PreDepartureInfectedGivenPositiveTestCount <- reactive({ PreDepartureInfectedGivenPositiveTestPercentage() * PreDeparturePositiveTestCount() })
-    PreDepartureInfectedGivenNegativeTestCount <- reactive({ PreDepartureInfectedGivenNegativeTestPercentage() * PreDepartureNegativeTestCount() })
-    PreDepartureUninfectedGivenPositiveTestCount <- reactive({ PreDepartureUninfectedGivenPositiveTestPercentage() * PreDeparturePositiveTestCount() })
-    PreDepartureUninfectedGivenNegativeTestCount <- reactive({ PreDepartureUninfectedGivenNegativeTestPercentage() * PreDepartureNegativeTestCount() })
-    # Section 3 assumptions
-    PostArrivalCount <- reactive({ PreDepartureCount() - PreDeparturePositiveTestGivenInfectedCount() })
-    PostArrivalInfectedPercentage <- reactive({ PreDepartureNegativeTestGivenInfectedCount() / PostArrivalCount() })
-    
+    # Pre-departure assumptions
+    PreDepartureTestPopulationCount <- reactive({ ifelse(input$PopulationCountChoice == "Automatic (based on 2019 O&D traffic for that pair)", max(TrafficTable[ which(TrafficTable$Origin == input$OriginState & TrafficTable$Destination == input$DestinationState), 3, drop = TRUE],0), input$PopulationCount) })
+    PreDepartureTestLimitOfDetection <- reactive({ ifelse(input$PreDepartureTestMethod == "None", NA, input$PreDepartureTestLimitOfDetection) })
+    PreDepartureTestSensitivity <- reactive({ ifelse(input$PreDepartureTestMethod == "None", NA, input$PreDepartureTestSensitivity / 100) })
+    PreDepartureTestSpecificity <- reactive({ ifelse(input$PreDepartureTestMethod == "None", NA, input$PreDepartureTestSpecificity / 100) })
+    # Pre-departure table 2.1
+    PreDepartureTestPopulationInfectedPercentage <- reactive({ OriginPrevalence() })
+    PreDepartureTestPopulationUninfectedPercentage <- reactive({ 1 - OriginPrevalence() })
+    PreDepartureTestPopulationInfectedCount <- reactive({ PreDepartureTestPopulationCount() * PreDepartureTestPopulationInfectedPercentage() })
+    PreDepartureTestPopulationUninfectedCount <- reactive({ PreDepartureTestPopulationCount() * (1 - PreDepartureTestPopulationInfectedPercentage()) })
+    # Pre-departure table 2.2
+    PreDepartureSampleTestedPercentage <- reactive({ ifelse(input$PreDepartureTestMethod == "None", 0, input$PreDepartureTestSampleSize / 100) })
+    PreDepartureSampleUntestedPercentage <- reactive({ 1 - PreDepartureSampleTestedPercentage() })
+    PreDepartureSampleTestedCount <- reactive({ PreDepartureTestPopulationCount() * PreDepartureSampleTestedPercentage() })
+    PreDepartureSampleUntestedCount <- reactive({ PreDepartureTestPopulationCount() - PreDepartureSampleTestedCount() })
+    # Pre-departure table 2.3
+    PreDepartureTestPositivePercentage <- reactive({ (PreDepartureTestSensitivity() * PreDepartureTestPopulationInfectedPercentage() + (1 - PreDepartureTestSpecificity()) * (1 - PreDepartureTestPopulationInfectedPercentage())) })
+    PreDepartureTestNegativePercentage <- reactive({ ((1 - PreDepartureTestSensitivity()) * PreDepartureTestPopulationInfectedPercentage() + PreDepartureTestSpecificity() * (1 - PreDepartureTestPopulationInfectedPercentage())) })
+    PreDepartureTestPositiveCount <- reactive({ PreDepartureSampleTestedCount() * PreDepartureTestPositivePercentage() })
+    PreDepartureTestNegativeCount <- reactive({ PreDepartureSampleTestedCount() * PreDepartureTestNegativePercentage() })
+    # Pre-departure table 2.4
+    PreDepartureTestPositiveGivenInfectedPercentage <- reactive({ PreDepartureTestSensitivity() })
+    PreDepartureTestPositiveGivenUninfectedPercentage <- reactive({ 1 - PreDepartureTestSpecificity() })
+    PreDepartureTestNegativeGivenInfectedPercentage <- reactive({ 1 - PreDepartureTestSensitivity() })
+    PreDepartureTestNegativeGivenUninfectedPercentage <- reactive({ PreDepartureTestSpecificity() })
+    PreDepartureTestPositiveGivenInfectedCount <- reactive({ PreDepartureTestPopulationInfectedCount() * PreDepartureTestPositiveGivenInfectedPercentage() * PreDepartureSampleTestedPercentage() })
+    PreDepartureTestPositiveGivenUninfectedCount <- reactive({ PreDepartureTestPopulationUninfectedCount() * PreDepartureTestPositiveGivenUninfectedPercentage() * PreDepartureSampleTestedPercentage() })
+    PreDepartureTestNegativeGivenInfectedCount <- reactive({ PreDepartureTestPopulationInfectedCount() * PreDepartureTestNegativeGivenInfectedPercentage() * PreDepartureSampleTestedPercentage() })
+    PreDepartureTestNegativeGivenUninfectedCount <- reactive({ PreDepartureTestPopulationUninfectedCount() * PreDepartureTestNegativeGivenUninfectedPercentage() * PreDepartureSampleTestedPercentage() })
+    # Pre-departure table 2.5
+    PreDepartureTestInfectedGivenPositivePercentage <- reactive({ PreDepartureTestSensitivity() * PreDepartureTestPopulationInfectedPercentage() / (PreDepartureTestSensitivity() * PreDepartureTestPopulationInfectedPercentage() + (1 - PreDepartureTestSpecificity()) * (1 - PreDepartureTestPopulationInfectedPercentage())) })
+    PreDepartureTestInfectedGivenNegativePercentage <- reactive({ (1 - PreDepartureTestSensitivity()) * PreDepartureTestPopulationInfectedPercentage() / ((1 - PreDepartureTestSensitivity()) * PreDepartureTestPopulationInfectedPercentage() + PreDepartureTestSpecificity() * (1 - PreDepartureTestPopulationInfectedPercentage())) })
+    PreDepartureTestUninfectedGivenPositivePercentage <- reactive({ (1 - PreDepartureTestSpecificity()) * (1 - PreDepartureTestPopulationInfectedPercentage()) / (PreDepartureTestSensitivity() * PreDepartureTestPopulationInfectedPercentage() + (1 - PreDepartureTestSpecificity()) * (1 - PreDepartureTestPopulationInfectedPercentage())) })
+    PreDepartureTestUninfectedGivenNegativePercentage <- reactive({ PreDepartureTestSpecificity() * (1 - PreDepartureTestPopulationInfectedPercentage()) / ((1 - PreDepartureTestSensitivity()) * PreDepartureTestPopulationInfectedPercentage() + PreDepartureTestSpecificity() * (1 - PreDepartureTestPopulationInfectedPercentage())) })
+    PreDepartureTestInfectedGivenPositiveCount <- reactive({ PreDepartureTestInfectedGivenPositivePercentage() * PreDepartureTestPositiveCount() })
+    PreDepartureTestInfectedGivenNegativeCount <- reactive({ PreDepartureTestInfectedGivenNegativePercentage() * PreDepartureTestNegativeCount() })
+    PreDepartureTestUninfectedGivenPositiveCount <- reactive({ PreDepartureTestUninfectedGivenPositivePercentage() * PreDepartureTestPositiveCount() })
+    PreDepartureTestUninfectedGivenNegativeCount <- reactive({ PreDepartureTestUninfectedGivenNegativePercentage() * PreDepartureTestNegativeCount() })
+    # Pre-departure table 2.6
+    PreDepartureTestClearedPercentage <- reactive({ PreDepartureTestClearedCount() / PreDepartureTestPopulationCount() })
+    PreDepartureTestStoppedPercentage <- reactive({ 1 - PreDepartureTestClearedPercentage() })
+    PreDepartureTestClearedCount <- reactive({ ifelse(input$PreDepartureTestMethod == "None", PreDepartureTestPopulationCount(), PreDepartureSampleTestedCount() - PreDepartureTestPositiveGivenInfectedCount()) })
+    PreDepartureTestStoppedCount <- reactive({ ifelse(input$PreDepartureTestMethod == "None", 0, PreDepartureTestPositiveGivenInfectedCount()) })
+    # Pre-departure table 2.7
+    PreDepartureTestResidualInfectedPercentage <- reactive({ ifelse(input$PreDepartureTestMethod == "None", PreDepartureTestPopulationInfectedPercentage(), (PreDepartureTestPopulationInfectedCount() - PreDepartureTestPositiveGivenInfectedCount()) / PreDepartureTestPopulationCount()) })
+    PreDepartureTestResidualUninfectedPercentage <- reactive({ 1 - PreDepartureTestResidualInfectedPercentage() })
+    PreDepartureTestResidualInfectedCount <- reactive({ ifelse(input$PreDepartureTestMethod == "None", PreDepartureTestPopulationInfectedCount(), PreDepartureTestPopulationInfectedCount() - PreDepartureTestPositiveGivenInfectedCount()) })
+    PreDepartureTestResidualUninfectedCount <- reactive({ PreDepartureTestPopulationUninfectedCount() })
+    # Post-arrival pre-test assumptions
+    PostArrivalTestCount <- reactive({ ifelse(input$PreDepartureTestMethod == "None", PreDepartureTestPopulationCount(), PreDepartureTestPopulationCount() - PreDepartureTestPositiveGivenInfectedCount()) })
+    PostArrivalTestInfectedPercentage <- reactive({ ifelse(input$PreDepartureTestMethod == "None", PreDepartureTestPopulationInfectedPercentage(), PreDepartureTestNegativeGivenInfectedCount() / PostArrivalTestCount()) })
+    PostArrivalTestUninfectedPercentage <- reactive({ 1 - PostArrivalTestInfectedPercentage() })
+    PostArrivalTestInfectedCount <- reactive({ PostArrivalTestInfectedPercentage() * PostArrivalTestCount() })
+    PostArrivalTestUninfectedCount <- reactive({ PostArrivalTestUninfectedPercentage() * PostArrivalTestCount() })
+    # Post-arrival test assumptions
+    PostArrivalTestLimitOfDetection <- reactive({ ifelse(input$PostArrivalTestMethod == "None", NA, input$PostArrivalTestLimitOfDetection) })
+    PostArrivalTestSensitivity <- reactive({ ifelse(input$PostArrivalTestMethod == "None", NA, input$PostArrivalTestSensitivity / 100) })
+    PostArrivalTestSpecificity <- reactive({ ifelse(input$PostArrivalTestMethod == "None", NA, input$PostArrivalTestSpecificity / 100) })
+    PostArrivalTestPopulationPercentage <- reactive({ ifelse(input$PostArrivalTestMethod == "None", 0, input$PostArrivalTestSampleSize / 100) })
+    PostArrivalTestPopulationCount <- reactive({ PostArrivalTestPopulationPercentage() * PostArrivalTestCount() })
+    # Post-arrival test results, table 1
+    PostArrivalPostTestPositivePercentage <- reactive({ (PostArrivalTestSensitivity() * PostArrivalTestInfectedPercentage() + (1 - PostArrivalTestSpecificity()) * (1 - PostArrivalTestInfectedPercentage())) })
+    PostArrivalPostTestNegativePercentage <- reactive({ ((1 - PostArrivalTestSensitivity()) * PostArrivalTestInfectedPercentage() + PostArrivalTestSpecificity() * (1 - PostArrivalTestInfectedPercentage())) })
+    PostArrivalPostTestPositiveCount <- reactive({ PostArrivalPostTestPositivePercentage() * PostArrivalTestPopulationCount() })
+    PostArrivalPostTestNegativeCount <- reactive({ PostArrivalPostTestNegativePercentage() * PostArrivalTestPopulationCount() })
+    # Post-arrival test results, table 2
+    PostArrivalPostTestPositiveGivenInfectedPercentage <- reactive({ PostArrivalTestSensitivity() })
+    PostArrivalPostTestPositiveGivenUninfectedPercentage <- reactive({ 1 - PostArrivalTestSpecificity() })
+    PostArrivalPostTestNegativeGivenInfectedPercentage <- reactive({ 1 - PostArrivalTestSensitivity() })
+    PostArrivalPostTestNegativeGivenUninfectedPercentage <- reactive({ PostArrivalTestSpecificity() })
+    PostArrivalPostTestPositiveGivenInfectedCount <- reactive({ PostArrivalPostTestPositiveGivenInfectedPercentage() * PostArrivalTestInfectedCount() })
+    PostArrivalPostTestPositiveGivenUninfectedCount <- reactive({ PostArrivalPostTestPositiveGivenUninfectedPercentage() * PostArrivalTestUninfectedCount() })
+    PostArrivalPostTestNegativeGivenInfectedCount <- reactive({ PostArrivalPostTestNegativeGivenInfectedPercentage() * PostArrivalTestInfectedCount() })
+    PostArrivalPostTestNegativeGivenUninfectedCount <- reactive({ PostArrivalPostTestNegativeGivenUninfectedPercentage() * PostArrivalTestUninfectedCount() })
+    # Post-arrival test results, table 3
+    PostArrivalPostTestInfectedGivenPositivePercentage <- reactive({ PostArrivalTestSensitivity() * PostArrivalTestInfectedPercentage() / (PostArrivalTestSensitivity() * PostArrivalTestInfectedPercentage() + (1 - PostArrivalTestSpecificity()) * (1 - PostArrivalTestInfectedPercentage())) })
+    PostArrivalPostTestInfectedGivenNegativePercentage <- reactive({ (1 - PostArrivalTestSensitivity()) * PostArrivalTestInfectedPercentage() / ((1 - PostArrivalTestSensitivity()) * PostArrivalTestInfectedPercentage() + PostArrivalTestSpecificity() * (1 - PostArrivalTestInfectedPercentage())) })
+    PostArrivalPostTestUninfectedGivenPositivePercentage <- reactive({ (1 - PostArrivalTestSpecificity()) * (1 - PostArrivalTestInfectedPercentage()) / (PostArrivalTestSensitivity() * PostArrivalTestInfectedPercentage() + (1 - PostArrivalTestSpecificity()) * (1 - PostArrivalTestInfectedPercentage())) })
+    PostArrivalPostTestUninfectedGivenNegativePercentage <- reactive({ PostArrivalTestSpecificity() * (1 - PostArrivalTestInfectedPercentage()) / ((1 - PostArrivalTestSensitivity()) * PostArrivalTestInfectedPercentage() + PostArrivalTestSpecificity() * (1 - PostArrivalTestInfectedPercentage())) })
+    PostArrivalPostTestInfectedGivenPositiveCount <- reactive({ PostArrivalPostTestInfectedGivenPositivePercentage() * PostArrivalPostTestPositiveCount() })
+    PostArrivalPostTestInfectedGivenNegativeCount <- reactive({ PostArrivalPostTestInfectedGivenNegativePercentage() * PostArrivalPostTestNegativeCount() })
+    PostArrivalPostTestUninfectedGivenPositiveCount <- reactive({ PostArrivalPostTestUninfectedGivenPositivePercentage() * PostArrivalPostTestPositiveCount() })
+    PostArrivalPostTestUninfectedGivenNegativeCount <- reactive({ PostArrivalPostTestUninfectedGivenNegativePercentage() * PostArrivalPostTestNegativeCount() })
+    # Post-arrival test results, table 4
+    PostArrivalPostTestClearedPercentage <- reactive({ PreDepartureTestClearedCount() / PostArrivalTestCount() })
+    PostArrivalPostTestStoppedPercentage <- reactive({ 1 - PostArrivalPostTestClearedPercentage() })
+    PostArrivalPostTestClearedCount <- reactive({ ifelse(input$PostArrivalTestMethod == "None", PostArrivalTestCount(), PostArrivalTestCount() - PreDepartureTestPositiveGivenInfectedCount()) })
+    PostArrivalPostTestStoppedCount <- reactive({ ifelse(input$PostArrivalTestMethod == "None", 0, PreDepartureTestPositiveGivenInfectedCount()) })
     ###########################################################################
     # 1. PRE-DEPARTURE PRE-TEST OUTCOMES                                      #
     ###########################################################################
-
         #######################################################################
         # 1.1. SUMMARY PANEL                                                  #
         #######################################################################
-
         output$PreDepartureInfectionSummary <- renderUI({
             HTML(
                 paste(
                     "<ul>",
-                    "<li><span style=color:#1E32FA>", formattable::percent(PreDepartureInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureInfectedCount(), format="d", big.mark=","), "</span> out of <span style=color:#1E32FA>", formatC(PreDepartureCount(), format="d", big.mark=","), "</span>) departing travelers are presumed infected.</li>",
-                        "<ul>",
-                        "<li>This is <span style=color:#1E32FA>", ifelse(PreDepartureInfectedPercentage() > DestinationPrevalence(), "higher", "lower"), "</span> than the disease prevalence at destination (<span style=color:#1E32FA>", formattable::percent(DestinationPrevalence(), 1), "</span>), which means there is a <span style=color:#1E32FA>", ifelse(PreDepartureInfectedPercentage() > DestinationPrevalence(), "positive", "negative"), "</span> relative risk of importation of cases before testing.</li>",
-                        "</ul>",
+                    "<li><span style=color:#1E32FA>", formattable::percent(PreDepartureTestPopulationInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureTestPopulationInfectedCount(), format="d", big.mark=","), "</span> out of <span style=color:#1E32FA>", formatC(PreDepartureTestPopulationCount(), format="d", big.mark=","), "</span>) departing travelers were presumed infected.</li>",
+                    "<ul>",
+                        "<li>This is <span style=color:#1E32FA>", ifelse(PreDepartureTestPopulationInfectedPercentage() > DestinationPrevalence(), "higher", "lower"), "</span> than the disease prevalence at destination (<span style=color:#1E32FA>", formattable::percent(DestinationPrevalence(), 1), "</span>).</li>",
+                        "<li>It means that there is a <span style=color:#1E32FA>", ifelse(PreDepartureTestPopulationInfectedPercentage() > DestinationPrevalence(), "positive", "negative"), "</span> relative risk of importation of cases prior to any testing.</li>",
+                    "</ul>",
                     "</ul>",
                     sep = ""
                 )
             )
         })
-        
         #######################################################################
         # 1.2. ASSUMPTIONS PANEL                                              #
         #######################################################################
-
         # Render the prevalence assumptions
         output$PrevalenceAssumptionsTitle <- renderText("Disease prevalence at origin and destination (left), and passenger traffic (right)")
         output$PrevalenceAssumptionsTable <- DT::renderDataTable(
             datatable(
                 data.frame(
-                    "Assumption" = c("Disease prevalence at origin", "Disease prevalence at destination"),
+                    "Assumption" = c("Prevalence at origin", "Prevalence at destination"),
                     "Value" = c(OriginPrevalence(), DestinationPrevalence())
                 ), rownames = NULL, options = list(dom = "t", ordering = F, paging = FALSE)
             ) %>%
-                formatPercentage(columns = 2, digits = 1) %>%
-                formatStyle(columns = 2,  color = "#1E32FA")
+                formatPercentage(columns = "Value", digits = 1) %>%
+                formatStyle(columns = "Value",  color = "#1E32FA")
         )
-        # Render the traffic assumptions
+        # Render the population assumptions
         output$TrafficAssumptionsTable <- DT::renderDataTable(
             datatable(
                 data.frame(
                     "Assumption" = "Passenger headcount",
-                    "Value" = PreDepartureCount()
+                    "Value" = PreDepartureTestPopulationCount()
                 ), rownames = NULL, options = list(dom = "t", ordering = F)
             ) %>%
-                formatCurrency(columns = "Value", currency = "", digits = 0) %>% formatStyle(columns = "Value",  color = "#1E32FA")
+                formatCurrency(columns = "Value", currency = "", digits = 0) %>%
+                formatStyle(columns = "Value",  color = "#1E32FA")
         )
-
+        # Render the prevalence for all countries
+        output$IncidenceTableTitle <- renderText(paste("Latest disease point prevalence and ", input$IncidenceMovingAverage, "-day moving average, by country"))
+        output$IncidenceTable <- DT::renderDataTable(
+            datatable(
+                IncidenceTable() %>%
+                    filter(Date == max(Date)) %>%
+                    select(Country, PointPrevalence, MovingAveragePrevalence) %>%
+                    rename("Latest" = "PointPrevalence", "Moving average" = "MovingAveragePrevalence"
+                    ), rownames = NULL, options = list(dom = "t", paging = FALSE)
+            ) %>%
+                formatPercentage(columns = c("Latest", "Moving average"), digits = 3) %>%
+                formatStyle(columns = c("Latest", "Moving average"), color = "#1E32FA")
+        )
         #######################################################################
-        # 1.3. OUTPUTS PANEL                                                  #
+        # 1.3. RESULTS PANEL                                                  #
         #######################################################################
-
         # Render the pre-departure likelihood of infection
         output$PreDepartureInfectionTitle <- renderText("Likelihood that a departing air traveler is infected, based on the disease prevalence at origin")
         output$PreDepartureInfectionPercentageTable <- DT::renderDataTable(
             datatable(
                 data.frame(
                     "Likelihood" = "Percent",
-                    "Infected" = PreDepartureInfectedPercentage(),
-                    "Uninfected" = PreDepartureUninfectedPercentage()
+                    "Infected" = PreDepartureTestPopulationInfectedPercentage(),
+                    "Uninfected" = PreDepartureTestPopulationUninfectedPercentage()
                 ), rownames = NULL, options = list(dom = "t", ordering = F)
             ) %>%
                 formatPercentage(columns = c("Infected", "Uninfected"), digits = 1) %>%
@@ -537,8 +580,8 @@ server <- function(input, output) {
             datatable(
                 data.frame(
                     "Likelihood" = "Count",
-                    "Infected" = PreDepartureInfectedCount(),
-                    "Uninfected" = PreDepartureUninfectedCount()
+                    "Infected" = PreDepartureTestPopulationInfectedCount(),
+                    "Uninfected" = PreDepartureTestPopulationUninfectedCount()
                 ), rownames = NULL, options = list(dom = "t", ordering = F)
             ) %>%
                 formatCurrency(columns = c("Infected", "Uninfected"), currency = "", digits = 0) %>%
@@ -548,7 +591,6 @@ server <- function(input, output) {
         #######################################################################
         # 1.4. CHARTS PANEL                                                   #
         #######################################################################
-        
         # Render a line plot to display the historical disease prevalence at origin and destination
         output$PrevalenceChartTitle <- renderText(paste(input$IncidenceMovingAverage, "-day disease prevalence at origin (red) and destination (blue)"))
         output$HistoricalPrevalenceChart <- renderPlot({
@@ -569,96 +611,58 @@ server <- function(input, output) {
             scale_y_continuous(labels = scales::percent) +
             theme_classic()
         })
-        
-        #######################################################################
-        # 1.5. DATA PANEL                                                     #
-        #######################################################################
-
-        # Render the prevalence at origin and destination
-        output$IncidenceTableOriginDestinationTitle <- renderText(paste("Latest disease point prevalence and ", input$IncidenceMovingAverage, "-day moving average, by origin and destination"))
-        output$IncidenceTableOriginDestination <- DT::renderDataTable(
-            datatable(
-                IncidenceTable() %>%
-                    filter(Country == input$OriginState | Country == input$DestinationState) %>%
-                    select(Date, Country, MovingAveragePrevalence) %>%
-                    pivot_wider(names_from = Country, values_from = MovingAveragePrevalence) %>%
-                    rename(Destination = input$DestinationState, Origin = input$OriginState) %>%
-                    remove_missing(),
-                rownames = NULL, options = list(dom = "t", ordering = F, paging = FALSE)
-            ) %>%
-                formatPercentage(columns = c(2:3), digits = 3) %>%
-                formatStyle(columns = c(2:3), color = "#1E32FA")
-        )
-        
-        # Render the prevalence for all countries
-        output$IncidenceTableTitle <- renderText(paste("Latest disease point prevalence and ", input$IncidenceMovingAverage, "-day moving average, by country"))
-        output$IncidenceTable <- DT::renderDataTable(
-            datatable(
-                IncidenceTable() %>%
-                    filter(Date == max(Date)) %>%
-                    select(Country, PointPrevalence, MovingAveragePrevalence) %>%
-                    rename("Latest" = "PointPrevalence", "Moving average" = "MovingAveragePrevalence"
-                ), rownames = NULL, options = list(dom = "t", paging = FALSE)
-            ) %>%
-                formatPercentage(columns = c("Latest", "Moving average"), digits = 3) %>%
-                formatStyle(columns = c(2:3), color = "#1E32FA")
-        )
-
     ###########################################################################
     # 2. PRE-DEPARTURE POST-TEST OUTCOMES                                     #
     ###########################################################################
-
         #######################################################################
         # 2.1. SUMMARY PANEL                                                  #
         #######################################################################
-        
         output$PreDepartureTestResultsSummary <- renderUI({
             HTML(
                 ifelse(input$PreDepartureTestMethod != "None",
                     paste(
                         "<ul>",
-                        "<li>Out of the <span style=color:#1E32FA>", formattable::percent(PreDepartureInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureInfectedCount(), format="d", big.mark=","), "</span> out of <span style=color:#1E32FA>", formatC(PreDepartureCount(), format="d", big.mark=","), "</span>) of departing travelers who are presumed infected:</li>",
+                            "<li><span style=color:#1E32FA>", formattable::percent(PreDepartureTestPopulationInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureTestPopulationInfectedCount(), format="d", big.mark=","), "</span>) of departing travelers were presumed infected, of which:</li>",
                             "<ul>",
-                            "<li><span style=color:#1E32FA>", formattable::percent(PreDeparturePositiveTestGivenInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDeparturePositiveTestGivenInfectedCount(), format="d", big.mark=","), "</span>) test positive (true positives) and are correctly prevented from boarding.</li>",
-                            "<li><span style=color:#1E32FA>", formattable::percent(PreDepartureNegativeTestGivenInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureNegativeTestGivenInfectedCount(), format="d", big.mark=","),"</span>) test negative (false negatives) and are incorrectly allowed to board.</li>",
-                            "<li>Pre-departure testing decreased the importation risk from <span style=color:#1E32FA>", formattable::percent(PreDepartureInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureInfectedCount(), format="d", big.mark=","), "</span> out of <span style=color:#1E32FA>", formatC(PreDepartureCount(), format="d", big.mark=","), "</span>) to <span style=color:#1E32FA>", formattable::percent(PostArrivalInfectedPercentage(),1),"</span> (<span style=color:#1E32FA>", formatC(PreDepartureNegativeTestGivenInfectedCount(), format="d", big.mark=","),"</span> out of <span style=color:#1E32FA>", formatC(PostArrivalCount(), format="d", big.mark=","), "</span> cleared travelers).</li>",
+                                "<li><span style=color:#1E32FA>", formattable::percent(PreDepartureTestPositiveGivenInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureTestPositiveGivenInfectedCount(), format="d", big.mark=","), "</span>) tested positive (true positives) and correctly prevented from boarding.</li>",
+                                "<li><span style=color:#1E32FA>", formattable::percent(PreDepartureTestNegativeGivenInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureTestNegativeGivenInfectedCount(), format="d", big.mark=","),"</span>) tested negative (false negatives) and incorrectly allowed to board.</li>",
                             "</ul>",
                             "<br>",
-                        "<li>Out of the <span style=color:#1E32FA>", formattable::percent(PreDepartureUninfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureUninfectedCount(), format="d", big.mark=","), "</span> out of <span style=color:#1E32FA>", formatC(PreDepartureCount(), format="d", big.mark=","), "</span>) of departing travelers who are presumed uninfected:</li>",
+                            "<li><span style=color:#1E32FA>", formattable::percent(PreDepartureTestPopulationUninfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureTestPopulationUninfectedCount(), format="d", big.mark=","), "</span>) of departing travelers were presumed uninfected, of which:</li>",
                             "<ul>",
-                            "<li><span style=color:#1E32FA>", formattable::percent(PreDepartureNegativeTestGivenUninfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureNegativeTestGivenUninfectedCount(), format="d", big.mark=","), "</span>) test negative (true negatives) and are correctly allowed to board.</li>",
-                            "<li><span style=color:#1E32FA>", formattable::percent(PreDeparturePositiveTestGivenUninfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDeparturePositiveTestGivenUninfectedCount(), format="d", big.mark=","),"</span>) test positive (false positives) and are incorrectly prevented from boarding, and presumably cleared after retest.</li>",
+                                "<li><span style=color:#1E32FA>", formattable::percent(PreDepartureTestNegativeGivenUninfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureTestNegativeGivenUninfectedCount(), format="d", big.mark=","), "</span>) tested negative (true negatives) and are correctly allowed to board.</li>",
+                                "<li><span style=color:#1E32FA>", formattable::percent(PreDepartureTestPositiveGivenUninfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureTestPositiveGivenUninfectedCount(), format="d", big.mark=","),"</span>) tested positive (false positives) and are only allowed to board after a negative retest.</li>",
                             "</ul>",
                             "<br>",
-                        "<li>Post-test likelihoods are as follows:</li>",
+                            "<li>The likelihood that a traveler is infected given a test result is:</li>",
                             "<ul>",
-                            "<li>The likelihood that a traveler who tests positive is actually infected is <span style=color:#1E32FA>", formattable::percent(PreDepartureInfectedGivenPositiveTestPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureInfectedGivenPositiveTestCount(), format="d", big.mark=","),"</span> out of all <span style=color:#1E32FA>", formatC(PreDeparturePositiveTestCount(), format="d", big.mark=","), "</span> positive tests).</li>",
-                            "<li>The likelihood that a traveler who tests negative is actually uninfected is <span style=color:#1E32FA>", formattable::percent(PreDepartureUninfectedGivenNegativeTestPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureInfectedGivenNegativeTestCount(), format="d", big.mark=","),"</span> out of all <span style=color:#1E32FA>", formatC(PreDepartureNegativeTestCount(), format="d", big.mark=","), "</span> negative tests).</li>",
+                                "<li><span style=color:#1E32FA>", formattable::percent(PreDepartureTestInfectedGivenPositivePercentage(), 1), "</span> in case of a positive test.</li>",
+                                "<li><span style=color:#1E32FA>", formattable::percent(PreDepartureTestInfectedGivenNegativePercentage(), 1), "</span> in case of a negative test.</li>",
                             "</ul>",
+                            "<br>",
+                            "<li>Pre-departure testing decreased the importation risk from <span style=color:#1E32FA>", formattable::percent(PreDepartureTestPopulationInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureTestPopulationInfectedCount(), format="d", big.mark=","), "</span>) to <span style=color:#1E32FA>", formattable::percent(PostArrivalTestInfectedPercentage(),1),"</span> (<span style=color:#1E32FA>", formatC(PreDepartureTestNegativeGivenInfectedCount(), format="d", big.mark=","),"</span>).</li>",
                         "</ul>",
                         sep = ""
                     ),
                     paste(
                         "<ul>",
-                        "<li>No pre-departure test is performed, so all <span style=color:#1E32FA>", formattable::percent(PreDepartureInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureInfectedCount(), format="d", big.mark=","), "</span> out of <span style=color:#1E32FA>", formatC(PreDepartureCount(), format="d", big.mark=","), "</span>) presumed infected travelers will board their aircraft.</li>",
+                        "<li>No pre-departure test was performed, so all <span style=color:#1E32FA>", formattable::percent(PreDepartureTestPopulationInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PreDepartureTestPopulationInfectedCount(), format="d", big.mark=","), "</span>) presumed infected travelers boarded their aircraft.</li>",
                         "</ul>",
                         sep = ""
                     )
                 )
             )
         })
-        
         #######################################################################
         # 2.2. ASSUMPTIONS PANEL                                              #
         #######################################################################
-
         # Render the test assumptions
         output$PreDepartureTestAssumptionsTitle <- renderText("Pre-departure test characteristics")
         output$PreDepartureTestCharacteristicsAssumptionsTable <- DT::renderDataTable(
             datatable(
                 data.frame(
                     "Assumption" = c("Tested passengers (%)", "Clinical sensitivity (%)", "Clinical specificity (%)"),
-                    "Value" = c(PreDepartureTestPopulationPercentage(), PreDepartureTestSpecificity(), PreDepartureTestSensitivity())
+                    "Value" = c(PreDepartureSampleTestedPercentage(), PreDepartureTestSpecificity(), PreDepartureTestSensitivity())
                 ), rownames = NULL, options = list(dom = "t", ordering = F, paging = FALSE)
             ) %>%
                 formatPercentage(columns = "Value", digits = 1) %>%
@@ -669,25 +673,71 @@ server <- function(input, output) {
             datatable(
                 data.frame(
                     "Assumption" = c("Tested passengers (count)", "Limit of detection (copies/ml)"),
-                    "Value" = c(PreDepartureTestPopulationCount(), PreDepartureTestLimitOfDetection())
+                    "Value" = c(PreDepartureSampleTestedCount(), PreDepartureTestLimitOfDetection())
                 ), rownames = NULL, options = list(dom = "t", ordering = F)
             ) %>%
                 formatCurrency(columns = "Value", currency = "", digits = 0) %>%
                 formatStyle(columns = "Value",  color = "#1E32FA", "text-align" = "right")
         )
-        
         #######################################################################
-        # 2.3. OUTPUTS PANEL                                                  #
+        # 2.3. RESULTS PANEL                                                  #
         #######################################################################
-        
-        # Render the pre-departure test results
-        output$PreDepartureTestResultsTitle <- renderText("Likelihood that a departing air traveler tests positive/negative")
+        # 2.1 Render the likelihood that a departing traveler is infected
+        output$PreDeparturePopulationTitle <- renderText("2.1. Likelihood that a departing traveler is infected/uninfected before testing")
+        output$PreDeparturePopulationPercentageTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Assumption" = "Percent",
+                    "Infected" = PreDepartureTestPopulationInfectedPercentage(),
+                    "Uninfected" = PreDepartureTestPopulationUninfectedPercentage()
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatPercentage(columns = c("Infected", "Uninfected"), digits = 1) %>%
+                formatStyle(columns = c("Infected", "Uninfected"),  color = "#1E32FA")
+        )
+        output$PreDeparturePopulationCountTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Assumption" = "Count",
+                    "Infected" = PreDepartureTestPopulationInfectedCount(),
+                    "Uninfected" = PreDepartureTestPopulationUninfectedCount()
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatCurrency(columns = c("Infected", "Uninfected"), currency = "", digits = 0) %>%
+                formatStyle(columns = c("Infected", "Uninfected"),  color = "#1E32FA")
+        )
+        # 2.2. Render the test population
+        output$PreDepartureSampleTitle <- renderText("2.2. Likelihood that a departing traveler gets tested")
+        output$PreDepartureSamplePercentageTable <- renderDataTable(
+            datatable(
+                data.frame(
+                    "Result" = "Percent",
+                    "Tested" = PreDepartureSampleTestedPercentage(),
+                    "Untested" = PreDepartureSampleUntestedPercentage()
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatPercentage(columns = c("Tested", "Untested"), digits = 1) %>%
+                formatStyle(columns = c("Tested", "Untested"),  color = "#1E32FA", "text-align" = "right")
+        )
+        output$PreDepartureSampleCountTable <- renderDataTable(
+            datatable(
+                data.frame(
+                    "Result" = "Count",
+                    "Tested" = PreDepartureSampleTestedCount(),
+                    "Untested" = PreDepartureSampleUntestedCount()
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatCurrency(columns = c("Tested", "Untested"), currency = "", digits = 0) %>%
+                formatStyle(columns = c("Tested", "Untested"),  color = "#1E32FA", "text-align" = "right")
+        )
+        # 2.3. Render the pre-departure test results
+        output$PreDepartureTestResultsTitle <- renderText("2.3. Likelihood that a departing air traveler tests positive/negative")
         output$PreDepartureTestResultsPercentageTable <- DT::renderDataTable(
             datatable(
                 data.frame(
                     "Result" = "Percent",
-                    "Positive" = PreDeparturePositiveTestPercentage(),
-                    "Negative" = PreDepartureNegativeTestPercentage()
+                    "Positive" = PreDepartureTestPositivePercentage(),
+                    "Negative" = PreDepartureTestNegativePercentage()
                 ), rownames = NULL, options = list(dom = "t", ordering = F)
             ) %>%
                 formatPercentage(columns = c("Positive", "Negative"), digits = 1) %>%
@@ -697,22 +747,21 @@ server <- function(input, output) {
             datatable(
                 data.frame(
                     "Result" = "Count",
-                    "Positive" = PreDeparturePositiveTestCount(),
-                    "Negative" = PreDepartureNegativeTestCount()
+                    "Positive" = PreDepartureTestPositiveCount(),
+                    "Negative" = PreDepartureTestNegativeCount()
                 ), rownames = NULL, options = list(dom = "t", ordering = F)
             ) %>%
                 formatCurrency(columns = c("Positive", "Negative"), currency = "", digits = 0) %>%
                 formatStyle(columns = c("Positive", "Negative"),  color = "#1E32FA", "text-align" = "right")
         )
-        
-        # Set and render the pre-departure test results given infection    
-        output$PreDepartureTestResultsGivenInfectionTitle <- renderText("Likelihood that a departing air traveler tests positive/negative, given that they are infected/uninfected")
+        # 2.4. Render the pre-departure test results given infection    
+        output$PreDepartureTestResultsGivenInfectionTitle <- renderText("2.4. Likelihood that a departing air traveler tests positive/negative, given that they are infected/uninfected")
         output$PreDepartureTestResultsGivenInfectionPercentageTable <- DT::renderDataTable(
             datatable(
                 data.frame(
                     "Test" = c("Positive", "Negative", "Total"),
-                    "Infected" = c(PreDeparturePositiveTestGivenInfectedPercentage(), PreDepartureNegativeTestGivenInfectedPercentage(), PreDeparturePositiveTestGivenInfectedPercentage() + PreDepartureNegativeTestGivenInfectedPercentage()),
-                    "Uninfected" = c(PreDeparturePositiveTestGivenUninfectedPercentage(), PreDepartureNegativeTestGivenUninfectedPercentage(), PreDeparturePositiveTestGivenUninfectedPercentage() + PreDepartureNegativeTestGivenUninfectedPercentage())
+                    "Infected" = c(PreDepartureTestPositiveGivenInfectedPercentage(), PreDepartureTestNegativeGivenInfectedPercentage(), PreDepartureTestPositiveGivenInfectedPercentage() + PreDepartureTestNegativeGivenInfectedPercentage()),
+                    "Uninfected" = c(PreDepartureTestPositiveGivenUninfectedPercentage(), PreDepartureTestNegativeGivenUninfectedPercentage(), PreDepartureTestPositiveGivenUninfectedPercentage() + PreDepartureTestNegativeGivenUninfectedPercentage())
                 ), rownames = NULL, options = list(dom = "t", ordering = F)
             ) %>%
                 formatPercentage(columns = c("Infected", "Uninfected"), digits = 1) %>%
@@ -722,22 +771,21 @@ server <- function(input, output) {
             datatable(
                 data.frame(
                     "Test" = c("Positive", "Negative", "Total"),
-                    "Infected" = c(PreDeparturePositiveTestGivenInfectedPercentage() * PreDepartureInfectedCount(), PreDepartureNegativeTestGivenInfectedPercentage() * PreDepartureInfectedCount(),PreDeparturePositiveTestGivenInfectedPercentage() * PreDepartureInfectedCount() + PreDepartureNegativeTestGivenInfectedPercentage() * PreDepartureInfectedCount()),
-                    "Uninfected" = c(PreDeparturePositiveTestGivenUninfectedPercentage() * PreDepartureUninfectedCount(), PreDepartureNegativeTestGivenUninfectedPercentage() * PreDepartureUninfectedCount(), PreDeparturePositiveTestGivenUninfectedPercentage() * PreDepartureUninfectedCount() + PreDepartureNegativeTestGivenUninfectedPercentage() * PreDepartureUninfectedCount())
+                    "Infected" = c(PreDepartureTestPositiveGivenInfectedCount(), PreDepartureTestNegativeGivenInfectedCount(), PreDepartureTestPositiveGivenInfectedCount() + PreDepartureTestNegativeGivenInfectedCount()),
+                    "Uninfected" = c(PreDepartureTestPositiveGivenUninfectedCount(), PreDepartureTestNegativeGivenUninfectedCount(), PreDepartureTestPositiveGivenUninfectedCount() + PreDepartureTestNegativeGivenUninfectedCount())
                 ), rownames = NULL, options = list(dom = "t", ordering = F)
             ) %>%
                 formatCurrency(columns = c("Infected", "Uninfected"), currency = "", digits = 0) %>%
                 formatStyle(columns = c("Infected", "Uninfected"),  color = "#1E32FA")
         )
-        
-        # Set and render the pre-departure infection likelihood given test results (posterior probabilities)
-        output$PreDepartureInfectionGivenTestResultsTitle <- renderText("Likelihood that a departing air traveler is infected/uninfected, given that they tested positive/negative")
+        # 2.5. Render the pre-departure infection likelihood given test results (posterior probabilities)
+        output$PreDepartureInfectionGivenTestResultsTitle <- renderText("2.5. Likelihood that a departing air traveler is infected/uninfected, given that they tested positive/negative")
         output$PreDepartureInfectionGivenTestResultsPercentageTable <- DT::renderDataTable(
             datatable(
                 data.frame(
                     "Test" = c("Infected", "Uninfected", "Total"),
-                    "Positive" = c(PreDepartureInfectedGivenPositiveTestPercentage(), PreDepartureUninfectedGivenPositiveTestPercentage(), PreDepartureInfectedGivenPositiveTestPercentage() + PreDepartureUninfectedGivenPositiveTestPercentage()),
-                    "Negative" = c(PreDepartureInfectedGivenNegativeTestPercentage(), PreDepartureUninfectedGivenNegativeTestPercentage(), PreDepartureInfectedGivenNegativeTestPercentage() + PreDepartureUninfectedGivenNegativeTestPercentage())
+                    "Positive" = c(PreDepartureTestInfectedGivenPositivePercentage(), PreDepartureTestUninfectedGivenPositivePercentage(), PreDepartureTestInfectedGivenPositivePercentage() + PreDepartureTestUninfectedGivenPositivePercentage()),
+                    "Negative" = c(PreDepartureTestInfectedGivenNegativePercentage(), PreDepartureTestUninfectedGivenNegativePercentage(), PreDepartureTestInfectedGivenNegativePercentage() + PreDepartureTestUninfectedGivenNegativePercentage())
                 ), rownames = NULL, options = list(dom = "t", ordering = F)
             ) %>%
                 formatPercentage(columns = c("Positive", "Negative"), digits = 1) %>%
@@ -747,31 +795,261 @@ server <- function(input, output) {
             datatable(
                 data.frame(
                     "Test" = c("Infected", "Uninfected", "Total"),
-                    "Positive" = c(PreDepartureInfectedGivenPositiveTestPercentage() * PreDeparturePositiveTestCount(), PreDepartureUninfectedGivenPositiveTestPercentage() * PreDeparturePositiveTestCount(), PreDepartureInfectedGivenPositiveTestPercentage() * PreDeparturePositiveTestCount() + PreDepartureUninfectedGivenPositiveTestPercentage() * PreDeparturePositiveTestCount()),
-                    "Negative" = c(PreDepartureInfectedGivenNegativeTestPercentage() * PreDepartureNegativeTestCount(), PreDepartureUninfectedGivenNegativeTestPercentage() * PreDepartureNegativeTestCount(), PreDepartureInfectedGivenNegativeTestPercentage() * PreDepartureNegativeTestCount() + PreDepartureUninfectedGivenNegativeTestPercentage() * PreDepartureNegativeTestCount())
+                    "Positive" = c(PreDepartureTestInfectedGivenPositivePercentage() * PreDepartureTestPositiveCount(), PreDepartureTestUninfectedGivenPositivePercentage() * PreDepartureTestPositiveCount(), PreDepartureTestInfectedGivenPositivePercentage() * PreDepartureTestPositiveCount() + PreDepartureTestUninfectedGivenPositivePercentage() * PreDepartureTestPositiveCount()),
+                    "Negative" = c(PreDepartureTestInfectedGivenNegativePercentage() * PreDepartureTestNegativeCount(), PreDepartureTestUninfectedGivenNegativePercentage() * PreDepartureTestNegativeCount(), PreDepartureTestInfectedGivenNegativePercentage() * PreDepartureTestNegativeCount() + PreDepartureTestUninfectedGivenNegativePercentage() * PreDepartureTestNegativeCount())
                 ), rownames = NULL, options = list(dom = "t", ordering = F)
             ) %>%
                 formatCurrency(columns = c("Positive", "Negative"), currency = "", digits = 0) %>%
                 formatStyle(columns = c("Positive", "Negative"),  color = "#1E32FA")
         )
-
+        # 2.6. Render the pre-departure passengers let through
+        output$PreDepartureTestTitle <- renderText("2.6. Likelihood that a tested departing air traveler is stopped or allowed to depart")
+        output$PreDepartureTestClearedPercentageTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Result" = "Percent",
+                    "Stopped" = PreDepartureTestStoppedPercentage(),
+                    "Allowed" = PreDepartureTestClearedPercentage()
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatPercentage(columns = c("Stopped", "Allowed"), digits = 1) %>%
+                formatStyle(columns = c("Stopped", "Allowed"),  color = "#1E32FA", "text-align" = "right")
+        )
+        output$PreDepartureTestClearedCountTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Result" = "Count",
+                    "Stopped" = PreDepartureTestStoppedCount(),
+                    "Allowed" = PreDepartureTestClearedCount()
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatCurrency(columns = c("Stopped", "Allowed"), currency = "", digits = 0) %>%
+                formatStyle(columns = c("Stopped", "Allowed"),  color = "#1E32FA", "text-align" = "right")
+        )
+        # 2.7. Render the residual importation risk
+        output$PreDepartureTestResidualTitle <- renderText("2.7. Likelihood that a departing traveler is infected/uninfected after testing")
+        output$PreDepartureTestResidualPercentageTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Result" = "Percent",
+                    "Infected" = PreDepartureTestResidualInfectedPercentage(),
+                    "Uninfected" = PreDepartureTestResidualUninfectedPercentage()
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatPercentage(columns = c("Infected", "Uninfected"), digits = 1) %>%
+                formatStyle(columns = c("Infected", "Uninfected"),  color = "#1E32FA", "text-align" = "right")
+        )
+        output$PreDepartureTestResidualCountTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Result" = "Count",
+                    "Infected" = PreDepartureTestResidualInfectedCount(),
+                    "Uninfected" = PreDepartureTestResidualUninfectedCount()
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatCurrency(columns = c("Infected", "Uninfected"), currency = "", digits = 0) %>%
+                formatStyle(columns = c("Infected", "Uninfected"),  color = "#1E32FA", "text-align" = "right")
+        )
         #######################################################################
         # 2.4. CHART PANEL                                                    #
         #######################################################################
         output$PreDepartureTestChartTitle <- renderText("Lorem ipsum dolor sit amet")
-        
-        #######################################################################
-        # 2.5. DATA PANEL                                                     #
-        #######################################################################
-
     ###########################################################################
     # 3. POST-ARRIVAL PRE-TEST OUTCOMES                                       #
     ###########################################################################
-    
+        #######################################################################
+        # 3.1. SUMMARY PANEL                                                  #
+        #######################################################################
+        output$PostArrivalInfectionSummary <- renderUI({
+            HTML(
+                ifelse(input$PostArrivalTestMethod == "None",
+                    paste(
+                        "<ul>",
+                        "<li>No post-arrival test is performed, so all <span style=color:#1E32FA>", formattable::percent(PostArrivalTestInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PostArrivalTestInfectedCount(), format="d", big.mark=","), "</span> out of <span style=color:#1E32FA>", formatC(PostArrivalTestCount(), format="d", big.mark=","), "</span>) presumed infected travelers will enter the destination.</li>",
+                        "</ul>",
+                        sep = ""
+                    ),
+                    paste(
+                        "<ul>",
+                            "<li>Out of the <span style=color:#1E32FA>", formattable::percent(PostArrivalTestInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PostArrivalTestInfectedCount(), format="d", big.mark=","), "</span> out of <span style=color:#1E32FA>", formatC(PostArrivalTestCount(), format="d", big.mark=","), "</span>) of departing travelers who are presumed infected:</li>",
+                            "<ul>",
+                                "<li><span style=color:#1E32FA>", formattable::percent(PostArrivalPostTestPositiveGivenInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PostArrivalPostTestPositiveGivenInfectedCount(), format="d", big.mark=","), "</span>) test positive (true positives) and are correctly prevented from boarding.</li>",
+                                "<li><span style=color:#1E32FA>", formattable::percent(PostArrivalPostTestNegativeGivenInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PostArrivalPostTestNegativeGivenInfectedCount(), format="d", big.mark=","),"</span>) test negative (false negatives) and are incorrectly allowed to board.</li>",
+                                "<li>Pre-departure testing decreased the importation risk from <span style=color:#1E32FA>", formattable::percent(PostArrivalTestInfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PostArrivalTestInfectedCount(), format="d", big.mark=","), "</span> out of <span style=color:#1E32FA>", formatC(PostArrivalTestCount(), format="d", big.mark=","), "</span>) to <span style=color:#1E32FA>", formattable::percent(PostArrivalPostTestInfectedPercentage(),1),"</span> (<span style=color:#1E32FA>", formatC(PostArrivalPostTestNegativeGivenInfectedCount(), format="d", big.mark=","),"</span> out of <span style=color:#1E32FA>", formatC(PostArrivalPostTestClearedCount(), format="d", big.mark=","), "</span> cleared travelers).</li>",
+                            "</ul>",
+                            "<br>",
+                            "<li>Out of the <span style=color:#1E32FA>", formattable::percent(PostArrivalTestUninfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PostArrivalTestUninfectedCount(), format="d", big.mark=","), "</span> out of <span style=color:#1E32FA>", formatC(PostArrivalTestCount(), format="d", big.mark=","), "</span>) of departing travelers who are presumed uninfected:</li>",
+                            "<ul>",
+                                "<li><span style=color:#1E32FA>", formattable::percent(PostArrivalPostTestNegativeGivenUninfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PostArrivalPostTestNegativeGivenUninfectedCount(), format="d", big.mark=","), "</span>) test negative (true negatives) and are correctly allowed to board.</li>",
+                                "<li><span style=color:#1E32FA>", formattable::percent(PostArrivalPostTestPositiveGivenUninfectedPercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PostArrivalPostTestPositiveGivenUninfectedCount(), format="d", big.mark=","),"</span>) test positive (false positives) and are incorrectly prevented from boarding, and presumably cleared after retest.</li>",
+                            "</ul>",
+                            "<br>",
+                            "<li>Post-test likelihoods are as follows:</li>",
+                            "<ul>",
+                                "<li>The likelihood that a traveler who tests positive is actually infected is <span style=color:#1E32FA>", formattable::percent(PostArrivalPostTestInfectedGivenPositivePercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PostArrivalPostTestInfectedGivenPositiveCount(), format="d", big.mark=","),"</span> out of all <span style=color:#1E32FA>", formatC(PostArrivalPostTestPositiveCount(), format="d", big.mark=","), "</span> positive tests).</li>",
+                                "<li>The likelihood that a traveler who tests negative is actually uninfected is <span style=color:#1E32FA>", formattable::percent(PostArrivalPostTestUninfectedGivenNegativePercentage(), 1), "</span> (<span style=color:#1E32FA>", formatC(PostArrivalPostTestInfectedGivenNegativeCount(), format="d", big.mark=","),"</span> out of all <span style=color:#1E32FA>", formatC(PostArrivalPostTestNegativeCount(), format="d", big.mark=","), "</span> negative tests).</li>",
+                            "</ul>",
+                        "</ul>",
+                        sep = ""
+                   )
+                )
+            )
+        })
+        #######################################################################
+        # 3.2. ASSUMPTIONS PANEL                                              #
+        #######################################################################
+        # Render the post-arrival, pre-test likelihood of infection
+        output$PostArrivalPopulationTitle <- renderText("Arriving population characteristics")
+        output$PostArrivalPopulationPercentageTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Assumption" = "Percent",
+                    "Infected" = PostArrivalTestInfectedPercentage(),
+                    "Uninfected" = PostArrivalTestUninfectedPercentage()
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatPercentage(columns = c("Infected", "Uninfected"), digits = 1) %>%
+                formatStyle(columns = c("Infected", "Uninfected"),  color = "#1E32FA")
+        )
+        output$PostArrivalPopulationCountTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Assumption" = "Count",
+                    "Infected" = PostArrivalTestInfectedCount(),
+                    "Uninfected" = PostArrivalTestUninfectedCount()
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatCurrency(columns = c("Infected", "Uninfected"), currency = "", digits = 0) %>%
+                formatStyle(columns = c("Infected", "Uninfected"),  color = "#1E32FA")
+        )
+        # Render the test assumptions
+        output$PostArrivalTestAssumptionsTitle <- renderText("Post-arrival test characteristics")
+        output$PostArrivalTestCharacteristicsAssumptionsTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Assumption" = c("Tested passengers (%)", "Clinical sensitivity (%)", "Clinical specificity (%)"),
+                    "Value" = c(PostArrivalTestPopulationPercentage(), PostArrivalTestSpecificity(), PostArrivalTestSensitivity())
+                ), rownames = NULL, options = list(dom = "t", ordering = F, paging = FALSE)
+            ) %>%
+                formatPercentage(columns = "Value", digits = 1) %>%
+                formatStyle(columns = "Value",  color = "#1E32FA", "text-align" = "right")
+        )
+        # Render the traffic assumptions
+        output$PostArrivalTestPopulationAssumptionsTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Assumption" = c("Tested passengers (count)", "Limit of detection (copies/ml)"),
+                    "Value" = c(PostArrivalTestPopulationCount(), PostArrivalTestLimitOfDetection())
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatCurrency(columns = "Value", currency = "", digits = 0) %>%
+                formatStyle(columns = "Value",  color = "#1E32FA", "text-align" = "right")
+        )
+        #######################################################################
+        # 3.3. RESULTS PANEL                                                  #
+        #######################################################################
+        # Render the post-arrival test results
+        output$PostArrivalTestResultsTitle <- renderText("Likelihood that an arriving air traveler tests positive/negative")
+        output$PostArrivalTestResultsPercentageTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Result" = "Percent",
+                    "Positive" = PostArrivalPostTestPositivePercentage(),
+                    "Negative" = PostArrivalPostTestNegativePercentage()
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatPercentage(columns = c("Positive", "Negative"), digits = 1) %>%
+                formatStyle(columns = c("Positive", "Negative"),  color = "#1E32FA", "text-align" = "right")
+        )
+        output$PostArrivalTestResultsCountTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Result" = "Count",
+                    "Positive" = PostArrivalPostTestPositiveCount(),
+                    "Negative" = PostArrivalPostTestNegativeCount()
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatCurrency(columns = c("Positive", "Negative"), currency = "", digits = 0) %>%
+                formatStyle(columns = c("Positive", "Negative"),  color = "#1E32FA", "text-align" = "right")
+        )
+        # Render the post-arrival test results given infection    
+        output$PostArrivalTestResultsGivenInfectionTitle <- renderText("Likelihood that an arriving air traveler tests positive/negative, given that they are infected/uninfected")
+        output$PostArrivalTestResultsGivenInfectionPercentageTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Test" = c("Positive", "Negative", "Total"),
+                    "Infected" = c(PostArrivalPostTestPositiveGivenInfectedPercentage(), PostArrivalPostTestNegativeGivenInfectedPercentage(), PostArrivalPostTestPositiveGivenInfectedPercentage() + PostArrivalPostTestNegativeGivenInfectedPercentage()),
+                    "Uninfected" = c(PostArrivalPostTestPositiveGivenUninfectedPercentage(), PostArrivalPostTestNegativeGivenUninfectedPercentage(), PostArrivalPostTestPositiveGivenUninfectedPercentage() + PostArrivalPostTestNegativeGivenUninfectedPercentage())
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatPercentage(columns = c("Infected", "Uninfected"), digits = 1) %>%
+                formatStyle(columns = c("Infected", "Uninfected"),  color = "#1E32FA")
+        )
+        output$PostArrivalTestResultsGivenInfectionCountTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Test" = c("Positive", "Negative", "Total"),
+                    "Infected" = c(PostArrivalPostTestPositiveGivenInfectedPercentage() * PostArrivalTestInfectedCount(), PostArrivalPostTestNegativeGivenInfectedPercentage() * PostArrivalTestInfectedCount(),PostArrivalPostTestPositiveGivenInfectedPercentage() * PostArrivalTestInfectedCount() + PostArrivalPostTestNegativeGivenInfectedPercentage() * PostArrivalTestInfectedCount()),
+                    "Uninfected" = c(PostArrivalPostTestPositiveGivenUninfectedPercentage() * PostArrivalTestUninfectedCount(), PostArrivalPostTestNegativeGivenUninfectedPercentage() * PostArrivalTestUninfectedCount(), PostArrivalPostTestPositiveGivenUninfectedPercentage() * PostArrivalTestUninfectedCount() + PostArrivalPostTestNegativeGivenUninfectedPercentage() * PostArrivalTestUninfectedCount())
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatCurrency(columns = c("Infected", "Uninfected"), currency = "", digits = 0) %>%
+                formatStyle(columns = c("Infected", "Uninfected"),  color = "#1E32FA")
+        )
+        # Render the post-arrival infection likelihood given test results (posterior probabilities)
+        output$PostArrivalInfectionGivenTestResultsTitle <- renderText("Likelihood that an arriving air traveler is infected/uninfected, given that they tested positive/negative")
+        output$PostArrivalInfectionGivenTestResultsPercentageTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Test" = c("Infected", "Uninfected", "Total"),
+                    "Positive" = c(PostArrivalPostTestInfectedGivenPositivePercentage(), PostArrivalPostTestUninfectedGivenPositivePercentage(), PostArrivalPostTestInfectedGivenPositivePercentage() + PostArrivalPostTestUninfectedGivenPositivePercentage()),
+                    "Negative" = c(PostArrivalPostTestInfectedGivenNegativePercentage(), PostArrivalPostTestUninfectedGivenNegativePercentage(), PostArrivalPostTestInfectedGivenNegativePercentage() + PostArrivalPostTestUninfectedGivenNegativePercentage())
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatPercentage(columns = c("Positive", "Negative"), digits = 1) %>%
+                formatStyle(columns = c("Positive", "Negative"),  color = "#1E32FA")
+        )
+        output$PostArrivalInfectionGivenTestResultsCountTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Test" = c("Infected", "Uninfected", "Total"),
+                    "Positive" = c(PostArrivalPostTestInfectedGivenPositivePercentage() * PostArrivalPostTestPositiveCount(), PostArrivalPostTestUninfectedGivenPositivePercentage() * PostArrivalPostTestPositiveCount(), PostArrivalPostTestInfectedGivenPositivePercentage() * PostArrivalPostTestPositiveCount() + PostArrivalPostTestUninfectedGivenPositivePercentage() * PostArrivalPostTestPositiveCount()),
+                    "Negative" = c(PostArrivalPostTestInfectedGivenNegativePercentage() * PostArrivalPostTestNegativeCount(), PostArrivalPostTestUninfectedGivenNegativePercentage() * PostArrivalPostTestNegativeCount(), PostArrivalPostTestInfectedGivenNegativePercentage() * PostArrivalPostTestNegativeCount() + PostArrivalPostTestUninfectedGivenNegativePercentage() * PostArrivalPostTestNegativeCount())
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatCurrency(columns = c("Positive", "Negative"), currency = "", digits = 0) %>%
+                formatStyle(columns = c("Positive", "Negative"),  color = "#1E32FA")
+        )
+        # Render the post-arrival passengers let through
+        output$PostArrivalPostTestTitle <- renderText("Likelihood that a departing air traveler is stopped or cleared on arrival")
+        output$PostArrivalPostTestClearedPercentageTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Result" = "Percent",
+                    "Stopped" = PostArrivalPostTestStoppedPercentage(),
+                    "Cleared" = PostArrivalPostTestClearedPercentage()
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatPercentage(columns = c("Stopped", "Cleared"), digits = 1) %>%
+                formatStyle(columns = c("Stopped", "Cleared"),  color = "#1E32FA", "text-align" = "right")
+        )
+        output$PostArrivalPostTestClearedCountTable <- DT::renderDataTable(
+            datatable(
+                data.frame(
+                    "Result" = "Count",
+                    "Stopped" = PostArrivalPostTestStoppedCount(),
+                    "Cleared" = PostArrivalPostTestClearedCount()
+                ), rownames = NULL, options = list(dom = "t", ordering = F)
+            ) %>%
+                formatCurrency(columns = c("Stopped", "Cleared"), currency = "", digits = 0) %>%
+                formatStyle(columns = c("Stopped", "Cleared"),  color = "#1E32FA", "text-align" = "right")
+        )
+        #######################################################################
+        # 3.4. CHART PANEL                                                    #
+        #######################################################################
+        output$PostArrivalTestChartTitle <- renderText("Lorem ipsum dolor sit amet")
 }
-
 ###############################################################################
 # RUN THE APP                                                                 #
 ###############################################################################
-
 shinyApp(ui, server)

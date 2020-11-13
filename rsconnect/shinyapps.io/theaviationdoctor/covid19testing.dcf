@@ -5,8 +5,8 @@ account: theaviationdoctor
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3130675
-bundleId: 3852049
+bundleId: 3852325
 url: https://theaviationdoctor.shinyapps.io/covid19testing/
-when: 1605187835.1318
+when: 1605192057.98042
 asMultiple: FALSE
 asStatic: FALSE
