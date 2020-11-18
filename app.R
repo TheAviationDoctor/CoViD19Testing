@@ -9,6 +9,8 @@
 # ROADMAP FOR FUTURE FEATURES                                                 #
 # 1. Likelihood of disease detection based on viral load ramp-up              #
 # 2. Transit passengers with mixed disease prevalence                         #
+# 3. Post-arrival quarantines to catch pre-symptomatic false negatives        #
+# 4. Two tests on departure (to reduce false positives)                       #
 ###############################################################################
 ###############################################################################
 # HOUSEKEEPING                                                                #
