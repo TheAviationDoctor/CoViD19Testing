@@ -69,29 +69,29 @@ ui <- fluidPage(
             h3(LabelInputPanel1),
             # Origin characteristics
             hr(),
-            radioButtons(inputId = "OriginPrevalenceChoice", label = "Disease prevalence at origin", choices = list("Manual (enter your own)", "Automatic (based on latest state data)")),
+            radioButtons(inputId = "OriginPrevalenceChoice", label = "Disease prevalence at origin", choices = list("Manual (enter your own)", "Automatic (based on latest WHO data)")),
             conditionalPanel(
                 condition = "input.OriginPrevalenceChoice == 'Manual (enter your own)'",
                 sliderInput(inputId = "OriginPrevalence", label = "", min = 0, max = 100, step = .1, value = 1.9)
             ),
             conditionalPanel(
-                condition = "input.OriginPrevalenceChoice == 'Automatic (based on latest state data)'",
+                condition = "input.OriginPrevalenceChoice == 'Automatic (based on latest WHO data)'",
                 selectInput(inputId = "OriginState", label = "", choices = States, selected = DefaultOriginState)
             ),
             # Destination characteristics
             hr(),
-            radioButtons(inputId = "DestinationPrevalenceChoice", label = "Disease  prevalence at destination", choices = list("Manual (enter your own)", "Automatic (based on latest state data)")),
+            radioButtons(inputId = "DestinationPrevalenceChoice", label = "Disease  prevalence at destination", choices = list("Manual (enter your own)", "Automatic (based on latest WHO data)")),
             conditionalPanel(
                 condition = "input.DestinationPrevalenceChoice == 'Manual (enter your own)'",
                 sliderInput(inputId = "DestinationPrevalence", label = "", min = 0, max = 100, step = .1, value = 1.2)
             ),
             conditionalPanel(
-                condition = "input.DestinationPrevalenceChoice == 'Automatic (based on latest state data)'",
+                condition = "input.DestinationPrevalenceChoice == 'Automatic (based on latest WHO data)'",
                 selectInput(inputId = "DestinationState", label = "", choices = States, selected = DefaultDestinationState)
             ),
             # Prevalence characteristics
             conditionalPanel(
-                condition = "input.OriginPrevalenceChoice == 'Automatic (based on latest state data)' | input.DestinationPrevalenceChoice == 'Automatic (based on latest state data)'",
+                condition = "input.OriginPrevalenceChoice == 'Automatic (based on latest WHO data)' | input.DestinationPrevalenceChoice == 'Automatic (based on latest WHO data)'",
                 hr(),
                 strong("Prevalence calculation options"),
                 br(),
@@ -409,8 +409,8 @@ server <- function(input, output) {
     # DECLARE VARIABLES                                                       #
     ###########################################################################
     # Starting assumptions
-    OriginPrevalence <- reactive({ ifelse(input$OriginPrevalenceChoice == "Automatic (based on latest state data)", IncidenceTable()[which(IncidenceTable()$Country == input$OriginState), 6, drop = TRUE], input$OriginPrevalence / 100) })
-    DestinationPrevalence <- reactive({ ifelse(input$DestinationPrevalenceChoice == "Automatic (based on latest state data)", IncidenceTable()[which(IncidenceTable()$Country == input$DestinationState), 6, drop = TRUE], input$DestinationPrevalence / 100) })
+    OriginPrevalence <- reactive({ ifelse(input$OriginPrevalenceChoice == "Automatic (based on latest WHO data)", IncidenceTable()[which(IncidenceTable()$Country == input$OriginState), 6, drop = TRUE], input$OriginPrevalence / 100) })
+    DestinationPrevalence <- reactive({ ifelse(input$DestinationPrevalenceChoice == "Automatic (based on latest WHO data)", IncidenceTable()[which(IncidenceTable()$Country == input$DestinationState), 6, drop = TRUE], input$DestinationPrevalence / 100) })
     # PreDeparture table 2.1
     PreDepartureTestPopulationCount <- reactive({ ifelse(input$PopulationCountChoice == "Automatic (based on 2019 O&D traffic for that pair)", max(TrafficTable[ which(TrafficTable$Origin == input$OriginState & TrafficTable$Destination == input$DestinationState), 3, drop = TRUE],0), input$PopulationCount) })
     PreDepartureTestLimitOfDetection <- reactive({ ifelse(input$PreDepartureTestMethod == "None", NA, input$PreDepartureTestLimitOfDetection) })
@@ -573,8 +573,8 @@ server <- function(input, output) {
                     remove_missing(),
                 aes(x = Date)
             ) +
-            geom_line(aes(y = if(input$OriginPrevalenceChoice == "Automatic (based on latest state data)") { OriginAutomatic } else { OriginManual }), color = "red") +
-            geom_line(aes(y = if(input$DestinationPrevalenceChoice == "Automatic (based on latest state data)") { DestinationAutomatic } else { DestinationManual }), color = "blue") +
+            geom_line(aes(y = if(input$OriginPrevalenceChoice == "Automatic (based on latest WHO data)") { OriginAutomatic } else { OriginManual }), color = "red") +
+            geom_line(aes(y = if(input$DestinationPrevalenceChoice == "Automatic (based on latest WHO data)") { DestinationAutomatic } else { DestinationManual }), color = "blue") +
             ylab("Disease prevalence") +
             scale_y_continuous(labels = scales::percent) +
             theme_classic()
