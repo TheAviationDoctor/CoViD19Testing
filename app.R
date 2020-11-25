@@ -22,8 +22,9 @@ library(DT)                 # To better display data tables
 library(formattable)        # To format numbers for rendering
 library(pins)               # To locally cache downloaded data for performance
 library(shiny)              # to build and display the app in a browser
-library(shinydashboard)
+library(shinydashboard)     # To add icons
 library(shinycssloaders)    # To style the app and spinners in particular
+library(shinyWidgets)       # To style the selectors' color
 library(tidyverse)          # To wrangle the data
 library(zoo)                # To perform rolling means
 ###############################################################################
@@ -42,9 +43,9 @@ TestsTable <- pin(URLTests) %>% read_csv(na = "", col_types = list(col_factor(),
 TrafficTable <- URLTraffic %>% read_csv(na = "", col_types = list(col_factor(), col_factor(), col_integer()))
 # Header labels
 AppHeader               <- "Air travel COVID-19 testing simulator"
-LabelInputPanel1        <- "A. Disease assumptions"
-LabelInputPanel2        <- "B. Traffic assumptions"
-LabelInputPanel3        <- "C. Test assumptions"
+LabelInputPanel1        <- "Disease assumptions"
+LabelInputPanel2        <- "Traffic assumptions"
+LabelInputPanel3        <- "Test assumptions"
 LabelOutputHeader1      <- "1. Pre-departure, pre-test outcomes"
 LabelOutputHeader2      <- "2. Pre-departure, post-test outcomes"
 LabelOutputHeader3      <- "3. Post-arrival, pre-test outcomes"
@@ -68,6 +69,7 @@ ui <- fluidPage(
         tags$style("* { font-family: 'Aktiv Grotesk', Arial, sans-serif; !important }"),
         tags$style("hr { border: 1px solid #000000 }")
     ),
+    chooseSliderSkin(skin = "Shiny", color = "#1E32FA"),
     # App header
     titlePanel(AppHeader),
     hr(),
@@ -78,7 +80,7 @@ ui <- fluidPage(
         sidebarPanel(
             hr(),
             # Disease assumptions section
-            h4(LabelInputPanel1),
+            tags$h4(HTML(paste("<i class='fa fa-virus'></i>", LabelInputPanel1, sep = " "))),
             # Origin characteristics
             radioButtons(inputId = "OriginPrevalenceChoice", label = "Prevalence at origin (%)", choices = list("Manual", "Automatic")),
             conditionalPanel(
@@ -111,16 +113,17 @@ ui <- fluidPage(
                 sliderInput(inputId = "NonSymptomaticRate", label = "Non-symptomatic rate", min = 0, max = 100, step = 1, value = 40)
             ),
             hr(),
-            # Population assumptions
-            h4(LabelInputPanel2),
-            radioButtons(inputId = "PopulationCountChoice", label = "From origin to destination", choices = list("Manual", "Automatic")),
+            # Population assumptions section
+            tags$h4(HTML(paste("<i class='fa fa-people-arrows'></i>", LabelInputPanel2, sep = " "))),
+            radioButtons(inputId = "PopulationCountChoice", label = "From origin to destination (K pax)", choices = list("Manual", "Automatic")),
             conditionalPanel(
                 condition = "input.PopulationCountChoice == 'Manual'",
-                sliderInput(inputId = "PopulationCount", label = NULL, min = 0, max = 2.2*10^9, value = 1*10^6)
+                sliderInput(inputId = "PopulationCount", label = NULL, min = 0, max = 2.2*10^6, value = 1*10^3)
             ),
             hr(),
+            # Test assumptions section
+            tags$h4(HTML(paste("<i class='fa fa-microscope'></i>", LabelInputPanel3, sep = " "))),
             # Pre-departure test characteristics
-            h4(LabelInputPanel3),
             selectInput(inputId = "PreDepartureTestMethod", label = "Pre-departure method", choices = c("None", TestTypes, "Custom")),
             conditionalPanel(
                 condition = "input.PreDepartureTestMethod != 'None'",
@@ -153,6 +156,7 @@ ui <- fluidPage(
                 sliderInput(inputId = "PostArrivalTestLimitOfDetection", label = "Limit of detection (copies/ml)", min = 0, max = 10^4, value = NA)
             ),
             hr(),
+            icon(""),
         ),
         #######################################################################
         # MAIN PANEL FOR OUTPUTS                                              #
@@ -408,7 +412,7 @@ server <- function(input, output) {
     OriginPrevalence <- reactive({ ifelse(input$OriginPrevalenceChoice == "Automatic", IncidenceTable()[which(IncidenceTable()$Country == input$OriginState), 6, drop = TRUE], input$OriginPrevalence / 100) })
     DestinationPrevalence <- reactive({ ifelse(input$DestinationPrevalenceChoice == "Automatic", IncidenceTable()[which(IncidenceTable()$Country == input$DestinationState), 6, drop = TRUE], input$DestinationPrevalence / 100) })
     # PreDeparture table 2.1
-    PreDepartureTestPopulationCount <- reactive({ ifelse(input$PopulationCountChoice == "Automatic", max(TrafficTable[ which(TrafficTable$Origin == input$OriginState & TrafficTable$Destination == input$DestinationState), 3, drop = TRUE],0), input$PopulationCount) })
+    PreDepartureTestPopulationCount <- reactive({ ifelse(input$PopulationCountChoice == "Automatic", max(TrafficTable[ which(TrafficTable$Origin == input$OriginState & TrafficTable$Destination == input$DestinationState), 3, drop = TRUE],0), input$PopulationCount * 1000) })
     PreDepartureTestLimitOfDetection <- reactive({ ifelse(input$PreDepartureTestMethod == "None", NA, input$PreDepartureTestLimitOfDetection) })
     PreDepartureTimePenalty <- reactive({ input$HoursBeforeDeparture / 72 + 1 })
     PreDepartureTestSensitivity <- reactive({ if (input$PreDepartureTestMethod == "None") { NA } else if (input$PreDepartureTestMethod == "Custom") { input$PreDepartureTestSensitivity / 100 * PreDepartureTimePenalty() } else { mean(TestsTable$ClinicalSensitivity[TestsTable$Type %in% input$PreDepartureTestMethod]) * PreDepartureTimePenalty() } })
