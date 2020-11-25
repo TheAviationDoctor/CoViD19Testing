@@ -78,7 +78,6 @@ ui <- fluidPage(
         # SIDEBAR PANEL FOR INPUTS                                            #
         #######################################################################
         sidebarPanel(
-            hr(),
             # Disease assumptions section
             tags$h4(HTML(paste("<i class='fa fa-virus'></i>", LabelInputPanel1, sep = " "))),
             # Origin characteristics
@@ -155,8 +154,7 @@ ui <- fluidPage(
                 sliderInput(inputId = "HoursAfterArrival", label = "Hours after unboarding", min = 0, max = 72, step = 1, value = 4),
                 sliderInput(inputId = "PostArrivalTestLimitOfDetection", label = "Limit of detection (copies/ml)", min = 0, max = 10^4, value = NA)
             ),
-            hr(),
-            icon(""),
+            icon(""), # Apparently it's necessary to declare this function somewhere to have the icon classes show up
         ),
         #######################################################################
         # MAIN PANEL FOR OUTPUTS                                              #
