@@ -1,0 +1,84 @@
+Manufacturer,Test,Type,AnalyticalSensitivity,ClinicalSensitivity,ClinicalSpecificity
+Mammoth Biosciences,SARS-CoV-2 DETECTR Reagent Kit,Typical CRISPR,20000,0.95,1
+Sherlock BioSciences,Sherlock CRISPR SARS-CoV-2 Kit,Typical CRISPR,6750,1,1
+Cue Health,Cue COVID-19 Test,Typical LAMP,1300,1,0.92
+Detectachem,MobileDetect Bio BCC19 (MD-Bio BCC19) Test Kit,Typical LAMP,75000,0.98,1
+Seasun Biomaterials,AQ-TOP COVID-19 Rapid Detection Kit PLUS,Typical LAMP,1000,1,1
+Seasun Biomaterials,AQ-TOP COVID-19 Rapid Detection Kit,Typical LAMP,7000,1,1
+1drop,1copy COVID-19 qPCR Multi Kit,Typical PCR,200,1,1
+3B Blackbio Biotech India,TRUPCR SARS-CoV-2 Kit,Typical PCR,10000,0.97,0.97
+Abbott Molecular,Abbott RealTime SARS-CoV-2 assay,Typical PCR,100,1,1
+Abbott Molecular,Alinity m SARS-CoV-2 assay,Typical PCR,100,1,0.97
+Agena Bioscience,MassARRAY SARS-CoV-2 Panel,Typical PCR,2500,0.95,1
+altona Diagnostics,RealStar SARS-CoV02 RT-PCR Kits,Typical PCR,150,0.88,1
+Applied DNA Sciences,Linea COVID-19 Assay Kit,Typical PCR,1250,0.98,0.92
+"Becton, Dickinson & Company",Company BD SARS-CoV-2Reagents for BD MAX System,Typical PCR,40,1,0.97
+"Becton, Dickinson & Company",BioGX SARS-CoV-2 Reagents for BD MAX System,Typical PCR,40,1,1
+Beijing Wantai Biological,Wantai SARS-CoV-2 RT-PCR Kit,Typical PCR,50,1,1
+BioCore,BioCore 2019-nCoV Real Time PCR Kit,Typical PCR,500,1,1
+Bioeksen R&D Technologies,Bio-Speedy Direct RT-qPCR SARS-CoV-2,Typical PCR,266,0.98,1
+Biomeme,Biomeme SARS-CoV-2 Real-Time RT-PCR Test,Typical PCR,1800,0.97,0.98
+BioMérieux SA,SARS-COV-2 R-GENE,Typical PCR,380,1,1
+BioRad Laboratories,Bio-Rad SARS-CoV-2 ddPCR Test,Typical PCR,150,0.95,0.95
+BioSewoom,Real-Q 2019-nCoV Detection Kit,Typical PCR,6250,1,1
+Cepheid,Xpert Xpress SARS-CoV-2 test,Typical PCR,250,0.98,0.96
+ChromaCode,HDPCR SARS-CoV-2 Assay,Typical PCR,1000,1,0.98
+Clear Labs,Clear Dx SARS-CoV-2 Test,Typical PCR,2000,1,1
+Co-Diagnostics,Logix Smart Coronavirus Disease 2019 (COVID-19) Kit,Typical PCR,9350,1,1
+Curative,Curative-Korva SARS-Cov-2 Assay,Typical PCR,200,1,1
+dba SpectronRx,Hymon SARS-CoV-2 Test Kit,Typical PCR,1200,1,1
+DiaCarta,QuantiVirus SARS-CoV-2 Test kit,Typical PCR,200,0.97,1
+DiaCarta,QuantiVirus SARS-CoV-2 Multiplex Test Kit,Typical PCR,83,0.98,1
+DiaSorin,Simplexa COVID-19 Direct,Typical PCR,500,1,1
+Enzo Life Sciences,AMPIPROBE SARS-CoV-2 Test System,Typical PCR,280,0.96,0.98
+Euroimmun US,EURORealTime SARS-CoV-2,Typical PCR,150,0.96,1
+Fosun Pharma USA,Fosun COVID-19 RT-PCR Detection Kit,Typical PCR,300,1,1
+Fulgent Therapeutics,Fulgent COVID-19 by RT-PCR Test,Typical PCR,5000,1,1
+Gencurix,GenePro SARS-CoV-2 Test,Typical PCR,5750,1,1
+Genetron Health (Beijing),Genetron SARS-CoV-2 RNA Test,Typical PCR,1000,1,0.97
+GenoSensor,GS COVID-19 RT-PCR KIT,Typical PCR,1000,1,1
+GK Pharmaceuticals Contract Manufacturing Operations,GK ACCU-RIGHT SARS-CoV-2 RT-PCR KIT,Typical PCR,2000,1,1
+Gravity Diagnostics,Gravity Diagnostics COVID-19 Assay,Typical PCR,2400,0.99,1
+InBios International,Smart Detect SARS-CoV-2 rRT-PCR Kit,Typical PCR,1100,1,1
+Ipsum Diagnostics,COV-19 IDx assay,Typical PCR,8500,1,1
+Jiangsu Bioperfectus Technologies,COVID-19 Coronavirus Real Time PCR Kit,Typical PCR,350,1,0.94
+Jiangsu CoWin Biotech,Novel Coronavirus (SARS-CoV-2) Fast Nucleic Acid Detection Kit,Typical PCR,300,1,1
+KimForest,KimForest SARS-CoV-2 Detection Kit v1,Typical PCR,200,1,1
+Kogene Biotech,PowerChek 2019-nCoV Real-time PCR Kit,Typical PCR,4000,1,1
+LabGenomics,LabGun COVID-19 RT-PCR Kit,Typical PCR,20000,1,1
+Luminex Molecular Diagnostics,ARIES SARS-CoV-2 Assay,Typical PCR,75000,1,1
+Luminex Molecular Diagnostics,NxTAG CoV Extended Panel Assay,Typical PCR,5000,1,1
+Maccura Biotechnology,SARS-CoV-2 Fluorescent PCR Kit,Typical PCR,1000,1,1
+NeuMoDx Molecular,NeuMoDx SARS-CoV-2 Assay,Typical PCR,150,1,1
+OPTI Medical Systems,OPTI SARS-CoV-2 RT PCR Test,Typical PCR,800,1,1
+OPTOLANE Technologies,Kaira 2019-nCoV Detection Kit,Typical PCR,5000,1,1
+PerkinElmer,PerkinElmer New Coronavirus Nucleic Acid Detection Kit,Typical PCR,20,1,1
+Phosphorus Diagnostics,Phosphorus COVID-19 RT-qPCR Test,Typical PCR,5000,0.97,0.98
+PlexBio,IntelliPlex SARS-CoV-2 Detection Kit,Typical PCR,140,1,1
+PreciGenome,FastPlex Triplex SARS-CoV-2 detection kit (RT-Digital PCR),Typical PCR,571,0.96,0.97
+Qiagen,QIAstat-Dx Respiratory SARS-CoV-2 Panel,Typical PCR,500,1,1
+Quadrant Biosciences,Clarifi COVID-19 Test Kit,Typical PCR,1000,1,1
+Quest Diagnostics,Quest SARS-CoV-2 rRT-PCR,Typical PCR,136,1,1
+Quidel Corporation,Lyra Direct SARS-CoV-2 Assay,Typical PCR,800,1,1
+Quidel Corporation,Lyra SARS-CoV-2 Assay,Typical PCR,800,1,1
+Rheonix,Rheonix COVID-19 MDx Assay,Typical PCR,625,0.95,1
+Roche Molecular Systems,cobas SARS-CoV-2 & Influenza A/B,Typical PCR,730,0.96,0.98
+Roche Molecular Systems,cobas SARS-CoV-2 & Influenza A/B Nucleic Acid Test for use on the cobas Liat System,Typical PCR,12,0.98,0.99
+RTA Laboratories Biological Products Pharmaceutical and Machinery Industry,Diagnovital SARS-CoV-2 Real-Time PCR Kit,Typical PCR,38,1,1
+Sansure BioTech,Novel Coronavirus (2019-nCoV) Nucleic Acid Diagnostic Kit,Typical PCR,200,1,1
+ScienCell Research Laboratories,ScienCell SARS-CoV-2 Coronavirus Real-time RT-PCR (RT-qPCR) Detection Kit,Typical PCR,1000,1,1
+SD Biosensor,STANDARD M nCoV Real-Time Detection Kit,Typical PCR,500,1,1
+Seasun Biomaterials,U-TOP COVID-19 Detection Kit,Typical PCR,1000,1,1
+Seegene,Allplex 2019-nCoV Assay,Typical PCR,4167,0.88,1
+SolGent,DiaPlexQ Novel Coronavirus (2019-nCoV) Detection Kit,Typical PCR,200,1,1
+TBG Biotechnology,ExProbe SARS-CoV-2 Testing Kit,Typical PCR,10000,1,0.995
+Tide Laboratories,DTPM COVID-19 RT-PCR Test,Typical PCR,22000,1,1
+TNS,COVID-19 RT-PCR Peptide Nucleic Acid (PNA) kit,Typical PCR,3120,1,1
+Trax Management Services,PhoenixDx 2019-CoV,Typical PCR,100,1,1
+Trax Management Services,PhoenixDx SARS-CoV-2 Multiplex,Typical PCR,50000,1,1
+Vela Operations Singapore,ViroKey SARS-CoV-2 RT-PCR Test,Typical PCR,560,0.97,0.95
+Vela Operations Singapore,ViroKey SARS-CoV-2 RT-PCR Test v2.0,Typical PCR,200,0.97,1
+Visby Medical,Visby Medical COVID-19,Typical PCR,1112,1,1
+Xiamen Zeesan Biotech,SARS-CoV-2 Test Kit (Real-time PCR),Typical PCR,200,1,1
+ZhuHai Sinochips Bioscience,COVID-19 Nucleic Acid RT-PCR Test Kit,Typical PCR,2000,0.97,1
+Zymo Research Corporation,Quick SARS-CoV-2rRT-PCR Kit,Typical PCR,83,1,1

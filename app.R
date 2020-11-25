@@ -385,7 +385,7 @@ server <- function(input, output) {
     PopulationTable <- pin(URLPopulation) %>%
         read_csv(na = "", col_types = list(col_factor(), col_integer()))
     # Import and wrangle the 2019 origin-destination passenger traffic
-    TrafficTable <- pin(URLTraffic) %>%
+    TrafficTable <- URLTraffic %>%
         read_csv(na = "", col_types = list(col_factor(), col_factor(), col_integer()))
     # Import and wrangle the WHO epidemiological data, then calculate the disease prevalence by country per 100 people using the CAPSCA formula
     IncidenceTable <- reactive({
